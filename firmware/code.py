@@ -20,6 +20,7 @@ import board
 import digitalio
 import json
 import sys
+import supervisor
 import time
 import usb_hid
 from adafruit_hid.keyboard import Keyboard
@@ -87,7 +88,8 @@ serial_buf = ""
 
 def read_serial_line():
     global serial_buf
-    # sys.stdin.read() is non-blocking in CircuitPython
+    if not supervisor.runtime.serial_bytes_available:
+        return None
     try:
         char = usb_serial.read(1)
         if char:
