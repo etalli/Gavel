@@ -1,0 +1,167 @@
+"""
+CCKN – Claude Code Key Node
+Raspberry Pi Pico firmware (CircuitPython)
+
+Buttons:
+  GP2 → Allow Once   → sends 'y' + Enter
+  GP3 → Always Allow → sends 'a' + Enter
+  GP4 → Reject       → sends 'n' + Enter
+
+LEDs:
+  GP10 → Allow Once   (green)
+  GP11 → Always Allow (green)
+  GP12 → Reject       (red)
+
+UART (serial from Mac hook scripts):
+  TX=GP0, RX=GP1 @ 9600 baud
+  Incoming JSON: {"type": "notification"|"permission"|"idle", "level": "info"|"warn"|"error"}
+"""
+
+import board
+import busio
+import digitalio
+import json
+import time
+import usb_hid
+from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.keycode import Keycode
+
+# ── USB Keyboard ──────────────────────────────────────────────
+kbd = Keyboard(usb_hid.devices)
+
+# ── UART (serial comms with Mac) ──────────────────────────────
+uart = busio.UART(board.GP0, board.GP1, baudrate=9600, timeout=0)
+
+# ── Buttons (active low via internal pull-up) ─────────────────
+def make_button(pin):
+    b = digitalio.DigitalInOut(pin)
+    b.direction = digitalio.Direction.INPUT
+    b.pull = digitalio.Pull.UP
+    return b
+
+btn_allow_once   = make_button(board.GP2)
+btn_always_allow = make_button(board.GP3)
+btn_reject       = make_button(board.GP4)
+
+# ── LEDs ──────────────────────────────────────────────────────
+def make_led(pin):
+    led = digitalio.DigitalInOut(pin)
+    led.direction = digitalio.Direction.OUTPUT
+    led.value = False
+    return led
+
+led_allow_once   = make_led(board.GP10)
+led_always_allow = make_led(board.GP11)
+led_reject       = make_led(board.GP12)
+
+# ── Helpers ───────────────────────────────────────────────────
+def all_leds_off():
+    led_allow_once.value = False
+    led_always_allow.value = False
+    led_reject.value = False
+
+def flash_all(times=3, on_ms=80, off_ms=80):
+    for _ in range(times):
+        led_allow_once.value = True
+        led_always_allow.value = True
+        led_reject.value = True
+        time.sleep(on_ms / 1000)
+        all_leds_off()
+        time.sleep(off_ms / 1000)
+
+def set_waiting_leds():
+    """Solid lights on all three — waiting for user input."""
+    led_allow_once.value = True
+    led_always_allow.value = True
+    led_reject.value = True
+
+def send_key(keycode):
+    kbd.press(keycode)
+    time.sleep(0.05)
+    kbd.release_all()
+    time.sleep(0.05)
+
+def press_enter():
+    send_key(Keycode.ENTER)
+
+# ── Serial line buffer ────────────────────────────────────────
+serial_buf = b""
+
+def read_serial_line():
+    global serial_buf
+    chunk = uart.read(64)
+    if chunk:
+        serial_buf += chunk
+        if b"\n" in serial_buf:
+            line, serial_buf = serial_buf.split(b"\n", 1)
+            return line.decode("utf-8").strip()
+    return None
+
+# ── Main loop ─────────────────────────────────────────────────
+DEBOUNCE_MS = 50
+last_press = 0
+
+while True:
+    now = time.monotonic_ns() // 1_000_000  # ms
+
+    # ── Button input ──────────────────────────────────────────
+    if (now - last_press) > DEBOUNCE_MS:
+        if not btn_allow_once.value:
+            all_leds_off()
+            led_allow_once.value = True
+            send_key(Keycode.Y)
+            press_enter()
+            time.sleep(0.2)
+            all_leds_off()
+            last_press = now
+
+        elif not btn_always_allow.value:
+            all_leds_off()
+            led_always_allow.value = True
+            send_key(Keycode.A)
+            press_enter()
+            time.sleep(0.2)
+            all_leds_off()
+            last_press = now
+
+        elif not btn_reject.value:
+            all_leds_off()
+            led_reject.value = True
+            send_key(Keycode.N)
+            press_enter()
+            time.sleep(0.2)
+            all_leds_off()
+            last_press = now
+
+    # ── Incoming serial from Mac ──────────────────────────────
+    line = read_serial_line()
+    if line:
+        try:
+            msg = json.loads(line)
+            t = msg.get("type", "")
+            level = msg.get("level", "info")
+
+            if t == "permission":
+                # Claude is asking for approval — light all LEDs
+                set_waiting_leds()
+
+            elif t == "notification":
+                if level == "error":
+                    # Fast red flash
+                    all_leds_off()
+                    for _ in range(5):
+                        led_reject.value = True
+                        time.sleep(0.1)
+                        led_reject.value = False
+                        time.sleep(0.1)
+                elif level == "warn":
+                    flash_all(times=3)
+                else:
+                    # info: single gentle flash
+                    flash_all(times=1, on_ms=200)
+
+            elif t == "idle":
+                all_leds_off()
+
+        except (ValueError, KeyError):
+            pass  # malformed JSON — ignore
