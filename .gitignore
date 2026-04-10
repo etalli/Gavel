@@ -1,1 +1,3 @@
 hooks/hook.log
+*.key
+!CCKN.key
