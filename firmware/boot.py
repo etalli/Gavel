@@ -1,7 +1,2 @@
-import usb_hid
-
-# Enable USB HID (keyboard) on boot
-usb_hid.enable(
-    (usb_hid.Device.KEYBOARD,),
-    boot_device=1
-)
+# CircuitPython enables USB HID (keyboard, mouse) by default.
+# No configuration needed here.
