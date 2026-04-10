@@ -12,15 +12,14 @@ LEDs:
   GP11 → Always Allow (green)
   GP12 → Reject       (red)
 
-UART (serial from Mac hook scripts):
-  TX=GP0, RX=GP1 @ 9600 baud
+Serial: USB serial (/dev/tty.usbmodem*) from Mac hook scripts
   Incoming JSON: {"type": "notification"|"permission"|"idle", "level": "info"|"warn"|"error"}
 """
 
 import board
-import busio
 import digitalio
 import json
+import sys
 import time
 import usb_hid
 from adafruit_hid.keyboard import Keyboard
@@ -29,8 +28,8 @@ from adafruit_hid.keycode import Keycode
 # ── USB Keyboard ──────────────────────────────────────────────
 kbd = Keyboard(usb_hid.devices)
 
-# ── UART (serial comms with Mac) ──────────────────────────────
-uart = busio.UART(board.GP0, board.GP1, baudrate=9600, timeout=0)
+# ── USB Serial (reads from /dev/tty.usbmodem* on Mac) ────────
+usb_serial = sys.stdin
 
 # ── Buttons (active low via internal pull-up) ─────────────────
 def make_button(pin):
@@ -70,7 +69,6 @@ def flash_all(times=3, on_ms=80, off_ms=80):
         time.sleep(off_ms / 1000)
 
 def set_waiting_leds():
-    """Solid lights on all three — waiting for user input."""
     led_allow_once.value = True
     led_always_allow.value = True
     led_reject.value = True
@@ -85,16 +83,20 @@ def press_enter():
     send_key(Keycode.ENTER)
 
 # ── Serial line buffer ────────────────────────────────────────
-serial_buf = b""
+serial_buf = ""
 
 def read_serial_line():
     global serial_buf
-    chunk = uart.read(64)
-    if chunk:
-        serial_buf += chunk
-        if b"\n" in serial_buf:
-            line, serial_buf = serial_buf.split(b"\n", 1)
-            return line.decode("utf-8").strip()
+    # sys.stdin.read() is non-blocking in CircuitPython
+    try:
+        char = usb_serial.read(1)
+        if char:
+            serial_buf += char
+            if "\n" in serial_buf:
+                line, serial_buf = serial_buf.split("\n", 1)
+                return line.strip()
+    except Exception:
+        pass
     return None
 
 # ── Main loop ─────────────────────────────────────────────────
@@ -142,12 +144,10 @@ while True:
             level = msg.get("level", "info")
 
             if t == "permission":
-                # Claude is asking for approval — light all LEDs
                 set_waiting_leds()
 
             elif t == "notification":
                 if level == "error":
-                    # Fast red flash
                     all_leds_off()
                     for _ in range(5):
                         led_reject.value = True
@@ -157,11 +157,10 @@ while True:
                 elif level == "warn":
                     flash_all(times=3)
                 else:
-                    # info: single gentle flash
                     flash_all(times=1, on_ms=200)
 
             elif t == "idle":
                 all_leds_off()
 
         except (ValueError, KeyError):
-            pass  # malformed JSON — ignore
+            pass
