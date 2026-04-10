@@ -19,9 +19,8 @@ Serial: USB serial (/dev/tty.usbmodem*) from Mac hook scripts
 import board
 import digitalio
 import json
-import sys
-import supervisor
 import time
+import usb_cdc
 import usb_hid
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keycode import Keycode
@@ -29,8 +28,9 @@ from adafruit_hid.keycode import Keycode
 # ── USB Keyboard ──────────────────────────────────────────────
 kbd = Keyboard(usb_hid.devices)
 
-# ── USB Serial (reads from /dev/tty.usbmodem* on Mac) ────────
-usb_serial = sys.stdin
+# ── USB Serial data port (separate from REPL console) ────────
+# This is /dev/tty.usbmodem*2 on Mac — does not conflict with HID
+serial = usb_cdc.data
 
 # ── Buttons (active low via internal pull-up) ─────────────────
 def make_button(pin):
@@ -88,10 +88,10 @@ serial_buf = ""
 
 def read_serial_line():
     global serial_buf
-    if not supervisor.runtime.serial_bytes_available:
+    if not serial.in_waiting:
         return None
     try:
-        char = usb_serial.read(1)
+        char = serial.read(1).decode("utf-8")
         if char:
             serial_buf += char
             if "\n" in serial_buf:
