@@ -23,11 +23,11 @@ Three buttons and three LEDs connected to a USB microcontroller. See [`hardware/
 
 ## How it works
 
-The Pico runs two independent roles over a single USB cable:
+The microcontroller runs two independent roles over a single USB cable:
 
 1. **USB HID keyboard** — pressing a button sends the matching keypress to the terminal. Claude Code receives it exactly as if the user typed it. No special Claude Code configuration needed.
 
-2. **Serial listener** — Claude Code hooks call Python scripts on the Mac side, which send small JSON messages over the Pico's USB serial port to control the LEDs.
+2. **Serial listener** — Claude Code hooks call Python scripts on the Mac side, which send small JSON messages over the microcontroller's USB serial port to control the LEDs.
 
 | Hook | LED response |
 |---|---|
@@ -41,7 +41,7 @@ The Pico runs two independent roles over a single USB cable:
 
 ## Setup
 
-1. Install [CircuitPython](https://circuitpython.org) on the Pico
+1. Install [CircuitPython](https://circuitpython.org) on your board
 2. Copy `firmware/boot.py`, `firmware/code.py`, and the `adafruit_hid` library to the `CIRCUITPY` drive
 3. Install the Mac-side dependency: `pip3 install pyserial`
 4. Wire buttons and LEDs per [`hardware/wiring.md`](hardware/wiring.md)
