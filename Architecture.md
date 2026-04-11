@@ -1,4 +1,4 @@
-# CCKN Architecture
+# Gavel Architecture
 
 ## System Overview
 
@@ -80,23 +80,30 @@ full parts list.
 ## File Layout
 
 ```
-270_CCKN/
-├── Architecture.md            ← This file
+270_CCKN/                          ← folder not yet renamed on disk
+├── Architecture.md                ← This file
+├── icon.svg                       ← Project icon (source)
+├── icon-16.png                    ← PNG exports
+├── icon-32.png
+├── icon-128.png
+├── icon-512.png
+├── install.sh                     ← Copies firmware to CIRCUITPY drive
 ├── .claude/
-│   └── settings.json          ← Claude Code hook configuration
+│   └── settings.json              ← Claude Code hook configuration
 ├── firmware/
-│   ├── boot.py                ← Enables USB HID at startup
-│   ├── main.py                ← Button + LED + serial logic
-│   └── requirements.txt       ← CircuitPython libs (adafruit_hid)
+│   ├── boot.py                    ← Enables USB CDC console + data ports at startup
+│   ├── code.py                    ← Button + LED + serial logic
+│   └── requirements.txt           ← CircuitPython libs (adafruit_hid)
 ├── hooks/
-│   ├── find_device.py         ← Locates the Pico's serial port on macOS
-│   ├── pre_tool.py            ← Fires on PreToolUse — signals waiting state
-│   ├── post_tool.py           ← Fires on PostToolUse — signals idle state
-│   ├── notify.py              ← Fires on Notification — drives flash pattern
-│   └── requirements.txt       ← pip dependency: pyserial
+│   ├── find_device.py             ← Locates the Pico's data serial port on macOS (usbmodem*3)
+│   ├── pre_tool.py                ← Fires on PreToolUse — signals waiting state
+│   ├── post_tool.py               ← Fires on PostToolUse — signals idle state
+│   ├── notify.py                  ← Fires on Notification — drives flash pattern
+│   ├── test_hooks.py              ← Hook test runner (no hardware needed)
+│   └── requirements.txt           ← pip dependency: pyserial
 └── hardware/
-    ├── bom.csv                ← Bill of materials
-    └── wiring.md              ← GPIO pin assignments and wiring diagrams
+    ├── bom.csv                    ← Bill of materials
+    └── wiring.md                  ← GPIO pin assignments and wiring diagrams
 ```
 
 ---
@@ -104,11 +111,9 @@ full parts list.
 ## Setup Steps
 
 1. Install CircuitPython on the Pico from circuitpython.org
-2. Copy `firmware/boot.py`, `firmware/main.py`, and the `adafruit_hid`
+2. Copy `firmware/boot.py`, `firmware/code.py`, and the `adafruit_hid`
    library folder to the Pico's `CIRCUITPY` drive
 3. Install the Mac-side dependency: `pip3 install pyserial`
 4. Wire buttons and LEDs per `hardware/wiring.md`
-5. Run Claude Code from this directory — hooks activate automatically
-
-> To use hooks globally (not just in this project), copy the contents of
-> `.claude/settings.json` into `~/.claude/settings.json`.
+5. Hooks are registered globally in `~/.claude/settings.json` — they activate
+   automatically in every Claude Code session

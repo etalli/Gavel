@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+
+  <!-- Apple-style rounded rectangle background -->
+  <rect x="0" y="0" width="512" height="512" rx="112" ry="112" fill="#ffffff"/>
+
+  <!-- Gavel: drawn upright then rotated as one group -->
+  <g transform="translate(-50, 30) rotate(55, 256, 210)">
+    <!-- Handle: drawn first (behind head) -->
+    <rect x="244" y="118" width="24" height="210" rx="12" fill="#111111"/>
+    <!-- Head: drawn last (on top) -->
+    <rect x="176" y="80" width="160" height="58" rx="12" fill="#111111"/>
+    <!-- Accent band on head -->
+    <rect x="176" y="112" width="160" height="16" fill="#ffffff" opacity="0.15"/>
+  </g>
+
+  <!-- Sound block -->
+  <rect x="262" y="348" width="148" height="34" rx="8" fill="#111111"/>
+
+  <!-- LED dots -->
+  <circle cx="152" cy="365" r="13" fill="#111111"/>
+  <circle cx="190" cy="365" r="13" fill="#111111"/>
+  <circle cx="228" cy="365" r="13" fill="none" stroke="#111111" stroke-width="4"/>
+
+</svg>

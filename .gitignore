@@ -1,3 +1,4 @@
 hooks/hook.log
 *.key
 !CCKN.key
+.DS_Store

@@ -1,5 +1,5 @@
 """
-CCKN – Claude Code Key Node
+Gavel – Claude Code physical controller
 Raspberry Pi Pico firmware (CircuitPython)
 
 Buttons:
@@ -101,6 +101,9 @@ def read_serial_line():
         pass
     return None
 
+# ── Startup flash (confirms code.py is running) ───────────────
+flash_all(times=2, on_ms=100, off_ms=100)
+
 # ── Main loop ─────────────────────────────────────────────────
 DEBOUNCE_MS = 50
 last_press = 0
@@ -140,6 +143,7 @@ while True:
     # ── Incoming serial from Mac ──────────────────────────────
     line = read_serial_line()
     if line:
+        print("received:", line)
         try:
             msg = json.loads(line)
             t = msg.get("type", "")
@@ -164,5 +168,5 @@ while True:
             elif t == "idle":
                 all_leds_off()
 
-        except (ValueError, KeyError):
-            pass
+        except (ValueError, KeyError) as e:
+            print("JSON error:", e, "line:", line)

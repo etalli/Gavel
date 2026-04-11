@@ -1,4 +1,4 @@
-# CCKN Wiring Reference
+# Gavel Wiring Reference
 
 ## Buttons
 

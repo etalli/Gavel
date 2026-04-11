@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Test runner for CCKN hooks — no hardware needed.
+Test runner for Gavel hooks — no hardware needed.
 
 Simulates what Claude Code sends to each hook script and checks the log.
 
 Usage:
-  cd /Users/k2/Library/CloudStorage/Dropbox/MyProjects/270_CCKN
+  cd /Users/k2/Library/CloudStorage/Dropbox/MyProjects/270_CCKN  # folder not yet renamed
   python3 hooks/test_hooks.py
 """
 import json
@@ -52,7 +52,7 @@ CASES = [
 ]
 
 print("=" * 60)
-print("CCKN Hook Test")
+print("Gavel Hook Test")
 print("=" * 60)
 
 passed = 0
