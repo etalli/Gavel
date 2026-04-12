@@ -10,7 +10,7 @@ A physical controller for [Claude Code](https://claude.ai/code).
 
 ## What it does
 
-- **Input** — Three physical buttons answer Claude Code's permission prompts (`y` Allow Once / `a` Always Allow / `n` Reject) without touching the keyboard.
+- **Input** — Three physical buttons answer Claude Code's permission prompts (`1` Allow Once / `2` Always Allow / `3` Reject) without touching the keyboard.
 - **Output** — LEDs light up in response to Claude Code hook events, giving real-time feedback on what Claude is doing.
 
 ---
@@ -52,3 +52,11 @@ Or use the install script:
 ```bash
 ./install.sh
 ```
+
+Use `--deploy` to install hooks to `~/.claude/gavel/` — a stable location independent of the project folder path:
+
+```bash
+./install.sh --deploy
+```
+
+This is recommended if you plan to move or rename the project folder.
