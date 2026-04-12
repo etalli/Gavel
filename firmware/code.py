@@ -117,7 +117,6 @@ while True:
             all_leds_off()
             led_allow_once.value = True
             send_key(Keycode.Y)
-            press_enter()
             time.sleep(0.2)
             all_leds_off()
             last_press = now
@@ -126,7 +125,6 @@ while True:
             all_leds_off()
             led_always_allow.value = True
             send_key(Keycode.A)
-            press_enter()
             time.sleep(0.2)
             all_leds_off()
             last_press = now
@@ -135,7 +133,6 @@ while True:
             all_leds_off()
             led_reject.value = True
             send_key(Keycode.N)
-            press_enter()
             time.sleep(0.2)
             all_leds_off()
             last_press = now
