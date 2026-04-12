@@ -3,9 +3,9 @@ Gavel – Claude Code physical controller
 Raspberry Pi Pico firmware (CircuitPython)
 
 Buttons:
-  GP2 → Allow Once   → sends 'y' + Enter
-  GP3 → Always Allow → sends 'a' + Enter
-  GP4 → Reject       → sends 'n' + Enter
+  GP2 → Allow Once   → sends '1'
+  GP3 → Always Allow → sends '2'
+  GP4 → Reject       → sends '3'
 
 LEDs:
   GP10 → Allow Once   (green)
@@ -116,7 +116,7 @@ while True:
         if not btn_allow_once.value:
             all_leds_off()
             led_allow_once.value = True
-            send_key(Keycode.Y)
+            send_key(Keycode.ONE)
             time.sleep(0.2)
             all_leds_off()
             last_press = now
@@ -124,7 +124,7 @@ while True:
         elif not btn_always_allow.value:
             all_leds_off()
             led_always_allow.value = True
-            send_key(Keycode.A)
+            send_key(Keycode.TWO)
             time.sleep(0.2)
             all_leds_off()
             last_press = now
@@ -132,7 +132,7 @@ while True:
         elif not btn_reject.value:
             all_leds_off()
             led_reject.value = True
-            send_key(Keycode.N)
+            send_key(Keycode.THREE)
             time.sleep(0.2)
             all_leds_off()
             last_press = now
