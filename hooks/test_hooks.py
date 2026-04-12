@@ -5,7 +5,7 @@ Test runner for Gavel hooks — no hardware needed.
 Simulates what Claude Code sends to each hook script and checks the log.
 
 Usage:
-  cd /Users/k2/Library/CloudStorage/Dropbox/MyProjects/270_CCKN  # folder not yet renamed
+  cd /Users/k2/Library/CloudStorage/Dropbox/MyProjects/270_CCKN
   python3 hooks/test_hooks.py
 """
 import json

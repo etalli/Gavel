@@ -80,7 +80,7 @@ full parts list.
 ## File Layout
 
 ```
-270_CCKN/                          ← folder not yet renamed on disk
+270_Gavel/
 ├── Architecture.md                ← This file
 ├── icon.svg                       ← Project icon (source)
 ├── icon-16.png                    ← PNG exports
