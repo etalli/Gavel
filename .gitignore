@@ -2,3 +2,9 @@ hooks/hook.log
 *.key
 !CCKN.key
 .DS_Store
+hooks/__pycache__/find_device.cpython-314.pyc
+.gitignore
+hooks/__pycache__/pico.cpython-314.pyc
+
+
+hooks/__pycache__/find_device.cpython-314.pyc
