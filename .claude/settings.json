@@ -1,4 +1,13 @@
 {
+  "permissions": {
+    "allow": [
+      "Skill(codex:setup)",
+      "Skill(codex:setup:*)",
+      "Read(//Volumes/**)",
+      "Bash(cp /Volumes/CIRCUITPY/code.py /Volumes/CIRCUITPY/code.py.bak)",
+      "Bash(cp /Users/k2/Library/CloudStorage/Dropbox/MyProjects/270_CCKN/firmware/test_leds.py /Volumes/CIRCUITPY/code.py)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
