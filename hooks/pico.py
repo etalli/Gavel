@@ -5,7 +5,6 @@ Handles logging and serial communication with the Pico.
 import json
 import os
 import datetime
-import serial
 from typing import Optional
 
 from find_device import find_pico_port
@@ -28,6 +27,7 @@ def send_to_pico(event: str, payload: dict) -> None:
     if not port:
         return
     try:
+        import serial
         with serial.Serial(port, BAUD_RATE, timeout=1) as ser:
             ser.write((json.dumps(payload) + "\n").encode())
     except Exception as e:
