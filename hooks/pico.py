@@ -30,5 +30,5 @@ def send_to_pico(event: str, payload: dict) -> None:
     try:
         with serial.Serial(port, BAUD_RATE, timeout=1) as ser:
             ser.write((json.dumps(payload) + "\n").encode())
-    except Exception:
-        pass
+    except Exception as e:
+        log(event, {"error": str(e)}, port)
