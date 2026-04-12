@@ -21,9 +21,8 @@ def log(event: str, payload: dict, port: Optional[str]) -> None:
 
 
 def send_to_pico(event: str, payload: dict) -> None:
-    """Find the Pico, log the event, and send payload as JSON over serial."""
+    """Find the Pico and send payload as JSON over serial. Logs errors only."""
     port = find_pico_port()
-    log(event, payload, port)
     if not port:
         return
     try:
