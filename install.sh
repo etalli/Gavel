@@ -37,6 +37,15 @@ if [ "$1" = "--deploy" ]; then
         "$SETTINGS"
 
     echo "Done. Hooks are now running from $DEST"
+
+    # ── Check pyserial ─────────────────────────────────────────────────────────
+    if ! python3 -c "import serial" 2>/dev/null; then
+        echo "pyserial not found. Installing..."
+        pip3 install pyserial
+    else
+        echo "pyserial already installed."
+    fi
+
     exit 0
 fi
 
