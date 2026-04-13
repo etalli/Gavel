@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Gavel - A physical controller for Claude Code. Rule on tool permissions with simple hardware buttons.">
+  <meta name="description"
+    content="Gavel - A physical controller for Claude Code. Rule on tool permissions with simple hardware buttons.">
   <title>Gavel | Physical Controller for Claude Code</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <div class="container">
     <header>
@@ -24,17 +27,22 @@
 
       <section class="content-section">
         <h2>Why "Gavel"?</h2>
-        <p>A judge's gavel delivers verdicts — allow or reject. This device does the same: when Claude Code asks for permission to run a tool, you press a physical button to rule on it. The name reflects the device's core role as the human decision point in the loop.</p>
+        <p>A judge's gavel delivers verdicts — allow or reject.
+          This device brings that same authority to AI: when Claude Code requests to run a tool, you press a physical
+          button to approve or deny it.
+          It makes human judgment explicit, visible, and unavoidable.</p>
       </section>
 
       <div class="grid">
         <div class="card content-section">
           <h3>Input</h3>
-          <p>Three physical buttons answer Claude Code's permission prompts (<code>1</code> Allow Once / <code>2</code> Always Allow / <code>3</code> Reject) without touching the keyboard.</p>
+          <p>Three physical buttons answer Claude Code's permission prompts (<code>1</code> Allow Once / <code>2</code>
+            Always Allow / <code>3</code> Reject) without touching the keyboard.</p>
         </div>
         <div class="card content-section">
           <h3>Output</h3>
-          <p>LEDs light up in response to Claude Code hook events, giving real-time feedback on what Claude is doing.</p>
+          <p>LEDs light up in response to Claude Code hook events, giving real-time feedback on what Claude is doing.
+          </p>
         </div>
       </div>
 
@@ -42,8 +50,10 @@
         <h2>How it works</h2>
         <p>The microcontroller runs two independent roles over a single USB cable:</p>
         <ol>
-          <li><strong>USB HID keyboard</strong> — pressing a button sends the matching keypress to the terminal. Claude Code receives it exactly as if the user typed it. No special Claude Code configuration needed.</li>
-          <li><strong>Serial listener</strong> — Claude Code hooks call Python scripts on the Mac side, which send small JSON messages over the microcontroller's USB serial port to control the LEDs.</li>
+          <li><strong>USB HID keyboard</strong> — pressing a button sends the matching keypress to the terminal. Claude
+            Code receives it exactly as if the user typed it. No special Claude Code configuration needed.</li>
+          <li><strong>Serial listener</strong> — Claude Code hooks call Python scripts on the Mac side, which send small
+            JSON messages over the microcontroller's USB serial port to control the LEDs.</li>
         </ol>
 
         <div class="table-wrapper">
@@ -79,13 +89,15 @@
           </table>
         </div>
       </section>
-      
+
       <section class="content-section">
         <h2>Setup</h2>
         <p>Getting started is straightforward:</p>
         <ol>
-          <li>Install <a href="https://circuitpython.org" target="_blank" rel="noopener noreferrer">CircuitPython</a> on your board</li>
-          <li>Copy <code>firmware/boot.py</code>, <code>firmware/code.py</code>, and the <code>adafruit_hid</code> library to the <code>CIRCUITPY</code> drive</li>
+          <li>Install <a href="https://circuitpython.org" target="_blank" rel="noopener noreferrer">CircuitPython</a> on
+            your board</li>
+          <li>Copy <code>firmware/boot.py</code>, <code>firmware/code.py</code>, and the <code>adafruit_hid</code>
+            library to the <code>CIRCUITPY</code> drive</li>
           <li>Install the Mac-side dependency: <code>pip3 install pyserial</code></li>
           <li>Wire buttons and LEDs per the hardware wiring guide</li>
           <li>Run <code>./install.sh --deploy</code> to register hooks in <code>~/.claude/settings.json</code></li>
@@ -98,8 +110,10 @@
       <p style="margin-top: 0.75rem;">
         <a href="https://github.com/etalli/Gavel" target="_blank" rel="noopener noreferrer">View on GitHub</a>
       </p>
-      <p style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.7;">&copy; 2026 Gavel Project. All rights reserved.</p>
+      <p style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.7;">&copy; 2026 Gavel Project. All rights reserved.
+      </p>
     </footer>
   </div>
 </body>
+
 </html>
