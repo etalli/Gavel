@@ -1,0 +1,48 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(codex:setup)",
+      "Skill(codex:setup:*)",
+      "Read(//Volumes/**)",
+      "Bash(cp /Volumes/CIRCUITPY/code.py /Volumes/CIRCUITPY/code.py.bak)",
+      "Bash(cp /Users/k2/Library/CloudStorage/Dropbox/MyProjects/270_Gavel/firmware/test_leds.py /Volumes/CIRCUITPY/code.py)",
+      "Bash(gh release create * --repo etalli/Gavel *)",
+      "Bash(git -C /Users/k2/Library/CloudStorage/Dropbox/MyProjects/270_Gavel remote set-url origin git@github.com:etalli/Gavel.git)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/k2/Library/CloudStorage/Dropbox/MyProjects/270_Gavel/hooks/pre_tool.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/k2/Library/CloudStorage/Dropbox/MyProjects/270_Gavel/hooks/post_tool.py"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/k2/Library/CloudStorage/Dropbox/MyProjects/270_Gavel/hooks/notify.py"
+          }
+        ]
+      }
+    ]
+  }
+}

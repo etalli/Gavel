@@ -1,0 +1,7 @@
+# CircuitPython libraries needed on the Pico's /lib folder
+# Download from: https://circuitpython.org/libraries
+#
+# adafruit_hid/          (folder — from adafruit-circuitpython-hid)
+#   keyboard.py
+#   keycode.py
+#   keyboard_layout_us.py

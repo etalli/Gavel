@@ -1,0 +1,6 @@
+hooks/hook.log
+*.key
+!docs/Gavel.key
+.DS_Store
+hooks/__pycache__/*
+Release.txt
