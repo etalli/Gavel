@@ -80,9 +80,6 @@ def send_key(keycode):
     kbd.release_all()
     time.sleep(0.05)
 
-def press_enter():
-    send_key(Keycode.ENTER)
-
 # ── Serial line buffer ────────────────────────────────────────
 serial_buf = ""
 
