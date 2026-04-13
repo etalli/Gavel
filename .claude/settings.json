@@ -43,6 +43,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/k2/Library/CloudStorage/Dropbox/MyProjects/270_Gavel/hooks/stop.py"
+          }
+        ]
+      }
     ]
   }
 }

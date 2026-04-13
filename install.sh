@@ -23,6 +23,7 @@ if [ "$1" = "--deploy" ]; then
     cp -v "$HOOKS/pre_tool.py"    "$DEST/pre_tool.py"
     cp -v "$HOOKS/post_tool.py"   "$DEST/post_tool.py"
     cp -v "$HOOKS/notify.py"      "$DEST/notify.py"
+    cp -v "$HOOKS/stop.py"        "$DEST/stop.py"
 
     echo "Updating $SETTINGS ..."
     # Replace project-path hook commands with deployed path
@@ -34,6 +35,9 @@ if [ "$1" = "--deploy" ]; then
         "$SETTINGS"
     sed -i '' \
         "s|python3 .*/hooks/notify.py|python3 $DEST/notify.py|g" \
+        "$SETTINGS"
+    sed -i '' \
+        "s|python3 .*/hooks/stop.py|python3 $DEST/stop.py|g" \
         "$SETTINGS"
 
     echo "Done. Hooks are now running from $DEST"
