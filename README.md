@@ -60,3 +60,21 @@ Use `--deploy` to install hooks to `~/.claude/gavel/` — a stable location inde
 ```
 
 This is recommended if you plan to move or rename the project folder.
+
+---
+
+## Troubleshooting
+
+**LEDs do not respond when running hook scripts manually from the terminal**
+
+```
+No module named 'serial'
+```
+
+`pyserial` may not be installed for the `python3` used in your terminal session. Fix with:
+
+```bash
+pip3 install pyserial
+```
+
+Note: Claude Code hooks may use a different Python environment that already has `pyserial` installed, so hooks can work in a Claude Code session even when manual terminal tests fail.
