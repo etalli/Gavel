@@ -4,9 +4,9 @@
 
 ```
 [Physical Device]               [Mac]
-  Button 1 (Allow Once)   ──►  sends 'y' + Enter to terminal
-  Button 2 (Always Allow) ──►  sends 'a' + Enter to terminal
-  Button 3 (Reject)       ──►  sends 'n' + Enter to terminal
+  Button 1 (Allow Once)   ──►  sends '1' to terminal
+  Button 2 (Always Allow) ──►  sends '2' to terminal
+  Button 3 (Reject)       ──►  sends '3' to terminal
   LED / Display           ◄──  Claude Code hooks → serial/USB → device
 ```
 
@@ -30,11 +30,11 @@ The device has two independent roles:
 The Pico enumerates as a standard USB keyboard. Claude Code's interactive
 permission prompts accept:
 
-| Key       | Meaning       |
-|-----------|---------------|
-| `y` Enter | Allow Once    |
-| `a` Enter | Always Allow  |
-| `n` Enter | Reject        |
+| Key | Meaning       |
+|-----|---------------|
+| `1` | Allow Once    |
+| `2` | Always Allow  |
+| `3` | Reject        |
 
 Pressing a physical button triggers the corresponding keypress via the
 `adafruit_hid` CircuitPython library. The terminal (and Claude Code) receive
@@ -68,9 +68,10 @@ Notification flash patterns:
 |-------------------|-----------------------|----------------------------------|
 | Microcontroller   | Raspberry Pi Pico     | RP2040, CircuitPython firmware   |
 | Buttons (×3)      | 6×6mm tactile switch  | Internal pull-up, active low     |
+| Reset button (×1) | 6×6mm tactile switch  | RUN pin to GND, no resistor      |
 | LEDs (×3)         | 5mm — 2× green, 1× red | 220Ω resistor in series each   |
 | Connection to Mac | USB Micro-B cable     | Powers the Pico + HID + serial   |
-| Enclosure         | ~100×60×30mm box      | 3D-printed or ABS project box   |
+| Enclosure         | ~100×60×30mm box      | Panel-mount buttons and LEDs     |
 
 See `hardware/wiring.md` for pin assignments and `hardware/bom.csv` for the
 full parts list.
@@ -81,29 +82,34 @@ full parts list.
 
 ```
 270_Gavel/
-├── Architecture.md                ← This file
-├── icon.svg                       ← Project icon (source)
-├── icon-16.png                    ← PNG exports
-├── icon-32.png
-├── icon-128.png
-├── icon-512.png
-├── install.sh                     ← Copies firmware to CIRCUITPY drive
+├── CLAUDE.md                          ← Project instructions for Claude Code
+├── README.md                          ← Project overview and setup guide
+├── install.sh                         ← Installs hooks to ~/.claude/gavel/
 ├── .claude/
-│   └── settings.json              ← Claude Code hook configuration
+│   └── settings.json                  ← Claude Code hook configuration
 ├── firmware/
-│   ├── boot.py                    ← Enables USB CDC console + data ports at startup
-│   ├── code.py                    ← Button + LED + serial logic
-│   └── requirements.txt           ← CircuitPython libs (adafruit_hid)
+│   ├── boot.py                        ← Enables USB CDC console + data ports at startup
+│   ├── code.py                        ← Button + LED + serial logic
+│   ├── test_leds.py                   ← LED test script
+│   └── requirements.txt               ← CircuitPython libs (adafruit_hid)
 ├── hooks/
-│   ├── find_device.py             ← Locates the Pico's data serial port on macOS (usbmodem*3)
-│   ├── pre_tool.py                ← Fires on PreToolUse — signals waiting state
-│   ├── post_tool.py               ← Fires on PostToolUse — signals idle state
-│   ├── notify.py                  ← Fires on Notification — drives flash pattern
-│   ├── test_hooks.py              ← Hook test runner (no hardware needed)
-│   └── requirements.txt           ← pip dependency: pyserial
-└── hardware/
-    ├── bom.csv                    ← Bill of materials
-    └── wiring.md                  ← GPIO pin assignments and wiring diagrams
+│   ├── find_device.py                 ← Locates the Pico's data serial port on macOS
+│   ├── pico.py                        ← Shared serial send helper
+│   ├── pre_tool.py                    ← Fires on PreToolUse — signals waiting state
+│   ├── post_tool.py                   ← Fires on PostToolUse — signals idle state
+│   ├── notify.py                      ← Fires on Notification — drives flash pattern
+│   ├── test_hooks.py                  ← Hook test runner (no hardware needed)
+│   └── requirements.txt               ← pip dependency: pyserial
+├── hardware/
+│   ├── bom.csv                        ← Bill of materials
+│   └── wiring.md                      ← GPIO pin assignments and wiring diagrams
+└── docs/
+    ├── Architecture.md                ← This file
+    ├── ROADMAP.md                     ← Planned features by phase
+    ├── index.html                     ← Project landing page
+    ├── styles.css                     ← Landing page styles
+    ├── Gavel.key                      ← Keynote presentation
+    └── icon.svg / icon-*.png          ← Project icons
 ```
 
 ---
@@ -115,5 +121,5 @@ full parts list.
    library folder to the Pico's `CIRCUITPY` drive
 3. Install the Mac-side dependency: `pip3 install pyserial`
 4. Wire buttons and LEDs per `hardware/wiring.md`
-5. Hooks are registered globally in `~/.claude/settings.json` — they activate
-   automatically in every Claude Code session
+5. Run `./install.sh --deploy` to install hooks to `~/.claude/gavel/`
+   and register them in `~/.claude/settings.json`
