@@ -31,6 +31,20 @@ Wiring per LED:
 GPIO pin ──[220Ω]──[LED anode → cathode]── GND
 ```
 
+## Reset Button
+
+Connecting a momentary button between the RUN pin and GND resets the firmware without unplugging USB.
+
+| Button | Pico Pin | Notes |
+|--------|----------|-------|
+| Reset  | Pin 30 (RUN) | Connect to GND momentarily |
+
+No resistor needed — the Pico has an internal pull-up on RUN.
+
+```
+RUN (Pin 30) ──[button]── GND
+```
+
 ## Serial (USB)
 
 The Pico communicates with the Mac over USB — no extra wires needed.
