@@ -109,7 +109,8 @@ full parts list.
     ├── index.html                     ← Project landing page
     ├── styles.css                     ← Landing page styles
     ├── Gavel.key                      ← Keynote presentation
-    └── icon.svg / icon-*.png          ← Project icons
+    ├── icon.svg                       ← Project icon (source)
+    └── images/                        ← PNG icon exports (16, 32, 128, 512px)
 ```
 
 ---
