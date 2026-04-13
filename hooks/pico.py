@@ -10,7 +10,6 @@ from typing import Optional
 from find_device import find_pico_port
 
 LOG_FILE = os.path.join(os.path.dirname(__file__), "hook.log")
-BAUD_RATE = 9600
 
 
 def log(event: str, payload: dict, port: Optional[str]) -> None:
@@ -27,7 +26,7 @@ def send_to_pico(event: str, payload: dict) -> None:
         return
     try:
         import serial
-        with serial.Serial(port, BAUD_RATE, timeout=1) as ser:
+        with serial.Serial(port, timeout=1) as ser:  # baud rate is irrelevant over USB CDC
             ser.write((json.dumps(payload) + "\n").encode())
     except Exception as e:
         log(event, {"error": str(e)}, port)
