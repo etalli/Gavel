@@ -51,6 +51,7 @@ over the Pico's serial port:
 | PreToolUse   | pre_tool.py    | All three LEDs solid on      |
 | PostToolUse  | post_tool.py   | All LEDs off (idle)          |
 | Notification | notify.py      | Flash pattern based on level |
+| Stop         | stop.py        | All LEDs off (session ended) |
 
 Notification flash patterns:
 
