@@ -49,10 +49,15 @@ The microcontroller runs two independent roles over a single USB cable:
 ## Setup
 
 1. Install [CircuitPython](https://circuitpython.org) on your board
-2. Copy `firmware/boot.py`, `firmware/code.py`, and the `adafruit_hid` library to the `CIRCUITPY` drive
-3. Install the Mac-side dependency: `pip3 install pyserial`
-4. Wire buttons and LEDs per [`hardware/wiring.md`](hardware/wiring.md)
-5. Hooks are registered in `~/.claude/settings.json` and activate automatically in every Claude Code session
+2. Download the [CircuitPython library bundle](https://circuitpython.org/libraries) matching your CircuitPython version
+3. Copy the following to `CIRCUITPY/lib/`:
+   - `adafruit_hid/` (folder) — required for all boards
+   - `neopixel.mpy` — required for Waveshare RP2040 Zero only
+4. Copy `firmware/boot.py` and `firmware/code.py` to the `CIRCUITPY` drive
+5. **Power cycle** the board (unplug and replug USB) so `boot.py` takes effect
+6. Install the Mac-side dependency: `pip3 install pyserial`
+7. Wire buttons and LEDs per [`hardware/wiring.md`](hardware/wiring.md)
+8. Run `./install.sh --deploy` to register hooks in `~/.claude/settings.json`
 
 Or use the install script:
 
