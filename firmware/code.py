@@ -54,25 +54,24 @@ led_allow_once   = make_led(board.GP10)
 led_always_allow = make_led(board.GP11)
 led_reject       = make_led(board.GP12)
 
+LEDS = [led_allow_once, led_always_allow, led_reject]
+
 # ── Helpers ───────────────────────────────────────────────────
 def all_leds_off():
-    led_allow_once.value = False
-    led_always_allow.value = False
-    led_reject.value = False
+    for led in LEDS:
+        led.value = False
 
 def flash_all(times=3, on_ms=80, off_ms=80):
     for _ in range(times):
-        led_allow_once.value = True
-        led_always_allow.value = True
-        led_reject.value = True
+        for led in LEDS:
+            led.value = True
         time.sleep(on_ms / 1000)
         all_leds_off()
         time.sleep(off_ms / 1000)
 
 def set_waiting_leds():
-    led_allow_once.value = True
-    led_always_allow.value = True
-    led_reject.value = True
+    for led in LEDS:
+        led.value = True
 
 def send_key(keycode):
     kbd.press(keycode)
@@ -100,6 +99,18 @@ def read_serial_line():
 
 # ── Startup flash (confirms code.py is running) ───────────────
 flash_all(times=2, on_ms=100, off_ms=100)
+
+# ── State ─────────────────────────────────────────────────────
+STATE_IDLE       = "idle"
+STATE_PERMISSION = "permission"
+state = STATE_IDLE
+
+# ── Night rider animation (idle state only) ───────────────────
+# Sequence bounces: LED0 → LED1 → LED2 → LED1 → LED0 → ...
+KNIGHT_SEQUENCE = [0, 1, 2, 1]
+KNIGHT_STEP_MS  = 150
+knight_step = 0
+knight_next = 0  # advance immediately on first loop
 
 # ── Main loop ─────────────────────────────────────────────────
 DEBOUNCE_MS = 50
@@ -134,6 +145,13 @@ while True:
             all_leds_off()
             last_press = now
 
+    # ── Night rider (idle only, non-blocking) ─────────────────
+    if state == STATE_IDLE and now >= knight_next:
+        all_leds_off()
+        LEDS[KNIGHT_SEQUENCE[knight_step]].value = True
+        knight_step = (knight_step + 1) % len(KNIGHT_SEQUENCE)
+        knight_next = now + KNIGHT_STEP_MS
+
     # ── Incoming serial from Mac ──────────────────────────────
     line = read_serial_line()
     if line:
@@ -144,6 +162,7 @@ while True:
             level = msg.get("level", "info")
 
             if t == "permission":
+                state = STATE_PERMISSION
                 set_waiting_leds()
 
             elif t == "notification":
@@ -158,9 +177,12 @@ while True:
                     flash_all(times=3)
                 else:
                     flash_all(times=1, on_ms=200)
+                state = STATE_IDLE
+                knight_next = now + KNIGHT_STEP_MS
 
             elif t == "idle":
-                all_leds_off()
+                state = STATE_IDLE
+                knight_next = now + KNIGHT_STEP_MS
 
         except (ValueError, KeyError) as e:
             print("JSON error:", e, "line:", line)
