@@ -22,16 +22,30 @@ Serial: USB serial (/dev/tty.usbmodem*) from Mac hook scripts
 import board
 import digitalio
 import json
+import math
 import time
 import usb_cdc
 import usb_hid
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keycode import Keycode
 
-# ── Board config ──────────────────────────────────────────────
+# ── Config ────────────────────────────────────────────────────
+
+# Board selection
 # True  = Waveshare RP2040 Zero (NeoPixel on GP16)
 # False = Raspberry Pi Pico    (LEDs on GP10/GP11/GP12)
 USE_NEOPIXEL = True
+
+# NeoPixel breathing animation
+BREATH_PERIOD = 4.0   # seconds per full breath cycle
+BREATH_MAX    = 80    # peak brightness (0–255)
+BREATH_UPDATE = 20    # ms between brightness updates
+
+# KITT animation (Pico only)
+KNIGHT_STEP_MS = 1000  # ms per LED step
+
+# Button debounce
+DEBOUNCE_MS = 50
 
 # ── USB Keyboard ──────────────────────────────────────────────
 kbd = Keyboard(usb_hid.devices)
@@ -71,12 +85,6 @@ if USE_NEOPIXEL:
     def flash_all(times=3, on_ms=80, off_ms=80):
         neo_flash(255, 255, 255, times, on_ms, off_ms)
 
-    # Breathing state
-    BREATH_MAX  = 80
-    BREATH_STEP = 3
-    BREATH_MS   = 30
-    breath_val  = 0
-    breath_dir  = BREATH_STEP
     breath_next = 0
 
 else:
@@ -88,7 +96,7 @@ else:
     led_allow_once   = make_led(board.GP10)
     led_always_allow = make_led(board.GP11)
     led_reject       = make_led(board.GP12)
-    LEDS  = [led_allow_once, led_always_allow, led_reject]
+    LEDS   = [led_allow_once, led_always_allow, led_reject]
     BRIGHT = 65535
     DIM    = 8000
     OFF    = 0
@@ -111,9 +119,7 @@ else:
             all_leds_off()
             time.sleep(off_ms / 1000)
 
-    # KITT state
     KNIGHT_SEQUENCE = [0, 1, 2, 1]
-    KNIGHT_STEP_MS  = 1000
     knight_step = 0
     knight_prev = -1
     knight_next = 0
@@ -150,13 +156,12 @@ STATE_IDLE       = "idle"
 STATE_PERMISSION = "permission"
 state = STATE_IDLE
 
-# kitt_enabled controls both KITT (regular) and breathing (NeoPixel)
-kitt_enabled = False  # toggle with Button 2 + Button 3 simultaneously
+# kitt_enabled controls KITT (Pico) and breathing (NeoPixel)
+kitt_enabled = True  # toggle with Button 2 + Button 3 simultaneously
 
 # ── Main loop ─────────────────────────────────────────────────
-DEBOUNCE_MS = 50
-last_press  = 0
-last_combo  = 0
+last_press = 0
+last_combo = 0
 
 while True:
     now = time.monotonic_ns() // 1_000_000  # ms
@@ -186,9 +191,6 @@ while True:
                     kitt_enabled = not kitt_enabled
                     if not kitt_enabled:
                         all_leds_off()
-                    if USE_NEOPIXEL:
-                        breath_val = 0
-                        breath_dir = BREATH_STEP
                     last_combo = now
             elif btn2:
                 all_leds_off()
@@ -210,7 +212,14 @@ while True:
                     all_leds_off()
             last_press = now
 
-    # ── KITT animation (regular LEDs, non-blocking) ───────────
+    # ── NeoPixel breathing (sine wave, non-blocking) ──────────
+    if USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and now >= breath_next:
+        t = time.monotonic()
+        brightness = int((1 - math.cos(2 * math.pi * t / BREATH_PERIOD)) / 2 * BREATH_MAX)
+        np[0] = (brightness, 0, 0)
+        breath_next = now + BREATH_UPDATE
+
+    # ── KITT animation (regular LEDs only, non-blocking) ──────
     if not USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and now >= knight_next:
         all_leds_off()
         curr = KNIGHT_SEQUENCE[knight_step]
@@ -220,18 +229,6 @@ while True:
         knight_prev = curr
         knight_step = (knight_step + 1) % len(KNIGHT_SEQUENCE)
         knight_next = now + KNIGHT_STEP_MS
-
-    # ── Breathing animation (NeoPixel, non-blocking) ──────────
-    if USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and now >= breath_next:
-        breath_val += breath_dir
-        if breath_val >= BREATH_MAX:
-            breath_val = BREATH_MAX
-            breath_dir = -BREATH_STEP
-        elif breath_val <= 0:
-            breath_val = 0
-            breath_dir = BREATH_STEP
-        np[0] = (breath_val, 0, 0)
-        breath_next = now + BREATH_MS
 
     # ── Incoming serial from Mac ──────────────────────────────
     line = read_serial_line()
@@ -268,20 +265,14 @@ while True:
                     else:
                         flash_all(times=1, on_ms=200)
                 state = STATE_IDLE
-                if USE_NEOPIXEL:
-                    breath_val = 0
-                    breath_next = now + BREATH_MS
-                else:
+                if not USE_NEOPIXEL:
                     knight_prev = -1
                     knight_next = now + KNIGHT_STEP_MS
 
             elif t == "idle":
                 state = STATE_IDLE
                 all_leds_off()
-                if USE_NEOPIXEL:
-                    breath_val = 0
-                    breath_next = now + BREATH_MS
-                else:
+                if not USE_NEOPIXEL:
                     knight_prev = -1
                     knight_next = now + KNIGHT_STEP_MS
 
