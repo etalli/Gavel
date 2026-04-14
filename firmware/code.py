@@ -133,16 +133,7 @@ while True:
 
     # ── Button input ──────────────────────────────────────────
     if (now - last_press) > DEBOUNCE_MS:
-        # Combo: Button 2 + Button 3 → toggle KITT mode
-        if not btn_always_allow.value and not btn_reject.value:
-            if (now - last_combo) > 500:  # 500ms combo debounce
-                kitt_enabled = not kitt_enabled
-                if not kitt_enabled:
-                    all_leds_off()
-                last_combo = now
-            last_press = now
-
-        elif not btn_allow_once.value:
+        if not btn_allow_once.value:
             all_leds_off()
             set_led(0, BRIGHT)
             send_key(Keycode.ONE)
@@ -150,20 +141,31 @@ while True:
             all_leds_off()
             last_press = now
 
-        elif not btn_always_allow.value:
-            all_leds_off()
-            set_led(1, BRIGHT)
-            send_key(Keycode.TWO)
-            time.sleep(0.2)
-            all_leds_off()
-            last_press = now
+        elif not btn_always_allow.value or not btn_reject.value:
+            # Wait 40ms to see if both buttons get pressed (combo window)
+            time.sleep(0.04)
+            btn2 = not btn_always_allow.value
+            btn3 = not btn_reject.value
 
-        elif not btn_reject.value:
-            all_leds_off()
-            set_led(2, BRIGHT)
-            send_key(Keycode.THREE)
-            time.sleep(0.2)
-            all_leds_off()
+            if btn2 and btn3:
+                # Combo: toggle KITT mode
+                if (now - last_combo) > 500:
+                    kitt_enabled = not kitt_enabled
+                    if not kitt_enabled:
+                        all_leds_off()
+                    last_combo = now
+            elif btn2:
+                all_leds_off()
+                set_led(1, BRIGHT)
+                send_key(Keycode.TWO)
+                time.sleep(0.2)
+                all_leds_off()
+            elif btn3:
+                all_leds_off()
+                set_led(2, BRIGHT)
+                send_key(Keycode.THREE)
+                time.sleep(0.2)
+                all_leds_off()
             last_press = now
 
     # ── KITT animation (idle only, non-blocking) ──────────────
