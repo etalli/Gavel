@@ -38,8 +38,8 @@ USE_NEOPIXEL = True
 
 # NeoPixel breathing animation
 BREATH_PERIOD = 4.0   # seconds per full breath cycle
-BREATH_MAX    = 80    # peak brightness (0–255)
-BREATH_UPDATE = 20    # ms between brightness updates
+BREATH_MAX    = 125    # peak brightness (0–255)
+BREATH_UPDATE = 100    # ms between brightness updates
 
 # KITT animation (Pico only)
 KNIGHT_STEP_MS = 1000  # ms per LED step
@@ -67,7 +67,7 @@ btn_reject       = make_button(board.GP4)
 # ── LED setup ─────────────────────────────────────────────────
 if USE_NEOPIXEL:
     import neopixel
-    np = neopixel.NeoPixel(board.GP16, 1, brightness=1.0, auto_write=True)
+    np = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=1.0, auto_write=True)
 
     def all_leds_off():
         np[0] = (0, 0, 0)
@@ -216,7 +216,7 @@ while True:
     if USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and now >= breath_next:
         t = time.monotonic()
         brightness = int((1 - math.cos(2 * math.pi * t / BREATH_PERIOD)) / 2 * BREATH_MAX)
-        np[0] = (brightness, 0, 0)
+        np[0] = (0, 0, brightness)
         breath_next = now + BREATH_UPDATE
 
     # ── KITT animation (regular LEDs only, non-blocking) ──────
