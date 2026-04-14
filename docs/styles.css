@@ -219,6 +219,33 @@ td {
   50% { opacity: 0.3; }
 }
 
+/* KITT sweep */
+.kitt-leds {
+  display: inline-flex;
+  gap: 6px;
+  margin-right: 12px;
+  vertical-align: middle;
+}
+
+.kitt-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #475569;
+  transition: background-color 0.1s, box-shadow 0.1s;
+}
+
+.kitt-dot.kitt-bright {
+  background-color: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+}
+
+.kitt-dot.kitt-dim {
+  background-color: #7f1d1d;
+  box-shadow: none;
+}
+
 code {
   background: rgba(255, 255, 255, 0.1);
   padding: 0.2em 0.4em;

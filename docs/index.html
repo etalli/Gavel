@@ -85,6 +85,17 @@
                 <td><code>Notification</code> (error)</td>
                 <td><span class="indicator indicator-flash-fast"></span>Five fast flashes (red only)</td>
               </tr>
+              <tr>
+                <td>Idle (KITT mode)</td>
+                <td>
+                  <span class="kitt-leds">
+                    <span class="kitt-dot" id="k0"></span>
+                    <span class="kitt-dot" id="k1"></span>
+                    <span class="kitt-dot" id="k2"></span>
+                  </span>
+                  Night rider sweep
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -116,6 +127,19 @@
       </p>
     </footer>
   </div>
+  <script>
+    const dots = [document.getElementById('k0'), document.getElementById('k1'), document.getElementById('k2')];
+    const seq = [0, 1, 2, 1];
+    let step = 0, prev = -1;
+    setInterval(() => {
+      dots.forEach(d => { d.className = 'kitt-dot'; });
+      const curr = seq[step];
+      if (prev >= 0 && prev !== curr) dots[prev].classList.add('kitt-dim');
+      dots[curr].classList.add('kitt-bright');
+      prev = curr;
+      step = (step + 1) % seq.length;
+    }, 1000);
+  </script>
 </body>
 
 </html>
