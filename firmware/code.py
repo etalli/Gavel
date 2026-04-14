@@ -19,6 +19,7 @@ Serial: USB serial (/dev/tty.usbmodem*) from Mac hook scripts
 import board
 import digitalio
 import json
+import pwmio
 import time
 import usb_cdc
 import usb_hid
@@ -43,12 +44,9 @@ btn_allow_once   = make_button(board.GP2)
 btn_always_allow = make_button(board.GP3)
 btn_reject       = make_button(board.GP4)
 
-# ── LEDs ──────────────────────────────────────────────────────
+# ── LEDs (PWM for brightness control) ────────────────────────
 def make_led(pin):
-    led = digitalio.DigitalInOut(pin)
-    led.direction = digitalio.Direction.OUTPUT
-    led.value = False
-    return led
+    return pwmio.PWMOut(pin, frequency=1000, duty_cycle=0)
 
 led_allow_once   = make_led(board.GP10)
 led_always_allow = make_led(board.GP11)
@@ -56,22 +54,32 @@ led_reject       = make_led(board.GP12)
 
 LEDS = [led_allow_once, led_always_allow, led_reject]
 
+# PWM duty cycle constants (0–65535)
+BRIGHT = 65535       # 100% — active LED
+DIM    = 8000        # ~12% — trailing glow
+OFF    = 0
+
 # ── Helpers ───────────────────────────────────────────────────
 def all_leds_off():
     for led in LEDS:
-        led.value = False
+        led.duty_cycle = OFF
+
+def set_led(index, duty):
+    LEDS[index].duty_cycle = duty
+
+def all_leds_on():
+    for led in LEDS:
+        led.duty_cycle = BRIGHT
 
 def flash_all(times=3, on_ms=80, off_ms=80):
     for _ in range(times):
-        for led in LEDS:
-            led.value = True
+        all_leds_on()
         time.sleep(on_ms / 1000)
         all_leds_off()
         time.sleep(off_ms / 1000)
 
 def set_waiting_leds():
-    for led in LEDS:
-        led.value = True
+    all_leds_on()
 
 def send_key(keycode):
     kbd.press(keycode)
@@ -105,25 +113,38 @@ STATE_IDLE       = "idle"
 STATE_PERMISSION = "permission"
 state = STATE_IDLE
 
-# ── Night rider animation (idle state only) ───────────────────
+# ── KITT animation (idle state only) ─────────────────────────
 # Sequence bounces: LED0 → LED1 → LED2 → LED1 → LED0 → ...
+# Active LED is bright; previous LED stays dimly lit as a trail.
 KNIGHT_SEQUENCE = [0, 1, 2, 1]
-KNIGHT_STEP_MS  = 150
+KNIGHT_STEP_MS  = 1000
 knight_step = 0
-knight_next = 0  # advance immediately on first loop
+knight_prev = -1     # index of trailing LED (-1 = none)
+knight_next = 0      # advance immediately on first loop
+kitt_enabled = True  # toggled by pressing Button 2 + Button 3 simultaneously
 
 # ── Main loop ─────────────────────────────────────────────────
 DEBOUNCE_MS = 50
 last_press = 0
+last_combo = 0
 
 while True:
     now = time.monotonic_ns() // 1_000_000  # ms
 
     # ── Button input ──────────────────────────────────────────
     if (now - last_press) > DEBOUNCE_MS:
-        if not btn_allow_once.value:
+        # Combo: Button 2 + Button 3 → toggle KITT mode
+        if not btn_always_allow.value and not btn_reject.value:
+            if (now - last_combo) > 500:  # 500ms combo debounce
+                kitt_enabled = not kitt_enabled
+                if not kitt_enabled:
+                    all_leds_off()
+                last_combo = now
+            last_press = now
+
+        elif not btn_allow_once.value:
             all_leds_off()
-            led_allow_once.value = True
+            set_led(0, BRIGHT)
             send_key(Keycode.ONE)
             time.sleep(0.2)
             all_leds_off()
@@ -131,7 +152,7 @@ while True:
 
         elif not btn_always_allow.value:
             all_leds_off()
-            led_always_allow.value = True
+            set_led(1, BRIGHT)
             send_key(Keycode.TWO)
             time.sleep(0.2)
             all_leds_off()
@@ -139,16 +160,21 @@ while True:
 
         elif not btn_reject.value:
             all_leds_off()
-            led_reject.value = True
+            set_led(2, BRIGHT)
             send_key(Keycode.THREE)
             time.sleep(0.2)
             all_leds_off()
             last_press = now
 
-    # ── Night rider (idle only, non-blocking) ─────────────────
-    if state == STATE_IDLE and now >= knight_next:
+    # ── KITT animation (idle only, non-blocking) ──────────────
+    if state == STATE_IDLE and kitt_enabled and now >= knight_next:
         all_leds_off()
-        LEDS[KNIGHT_SEQUENCE[knight_step]].value = True
+        curr = KNIGHT_SEQUENCE[knight_step]
+        # Trail: previous position stays dimly lit
+        if knight_prev >= 0 and knight_prev != curr:
+            set_led(knight_prev, DIM)
+        set_led(curr, BRIGHT)
+        knight_prev = curr
         knight_step = (knight_step + 1) % len(KNIGHT_SEQUENCE)
         knight_next = now + KNIGHT_STEP_MS
 
@@ -169,19 +195,21 @@ while True:
                 if level == "error":
                     all_leds_off()
                     for _ in range(5):
-                        led_reject.value = True
+                        set_led(2, BRIGHT)
                         time.sleep(0.1)
-                        led_reject.value = False
+                        set_led(2, OFF)
                         time.sleep(0.1)
                 elif level == "warn":
                     flash_all(times=3)
                 else:
                     flash_all(times=1, on_ms=200)
                 state = STATE_IDLE
+                knight_prev = -1
                 knight_next = now + KNIGHT_STEP_MS
 
             elif t == "idle":
                 state = STATE_IDLE
+                knight_prev = -1
                 knight_next = now + KNIGHT_STEP_MS
 
         except (ValueError, KeyError) as e:
