@@ -121,7 +121,7 @@ KNIGHT_STEP_MS  = 1000
 knight_step = 0
 knight_prev = -1     # index of trailing LED (-1 = none)
 knight_next = 0      # advance immediately on first loop
-kitt_enabled = True  # toggled by pressing Button 2 + Button 3 simultaneously
+kitt_enabled = False  # toggled by pressing Button 2 + Button 3 simultaneously
 
 # ── Main loop ─────────────────────────────────────────────────
 DEBOUNCE_MS = 50
