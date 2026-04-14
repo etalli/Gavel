@@ -17,7 +17,14 @@ A physical controller for [Claude Code](https://claude.ai/code).
 
 ## Hardware
 
-Three buttons and three LEDs connected to a USB microcontroller. See [`hardware/wiring.md`](hardware/wiring.md) for pin assignments and [`hardware/bom.csv`](hardware/bom.csv) for the parts list.
+Two boards are supported:
+
+| Board | LED output | Config |
+|-------|-----------|--------|
+| Raspberry Pi Pico | 3× discrete LEDs (GP10/GP11/GP12) | `USE_NEOPIXEL = False` |
+| Waveshare RP2040 Zero | Built-in RGB NeoPixel (GP16) | `USE_NEOPIXEL = True` |
+
+Both use the same GPIO pins for buttons (GP2/GP3/GP4). See [`hardware/wiring.md`](hardware/wiring.md) for full pin assignments.
 
 ---
 

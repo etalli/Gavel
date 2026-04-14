@@ -1,16 +1,19 @@
 """
 Gavel – Claude Code physical controller
-Raspberry Pi Pico firmware (CircuitPython)
+Raspberry Pi Pico / Waveshare RP2040 Zero firmware (CircuitPython)
 
-Buttons:
+Buttons (both boards):
   GP2 → Allow Once   → sends '1'
   GP3 → Always Allow → sends '2'
   GP4 → Reject       → sends '3'
 
-LEDs:
+Regular LED mode (Raspberry Pi Pico):
   GP10 → Allow Once   (green)
   GP11 → Always Allow (green)
   GP12 → Reject       (red)
+
+NeoPixel mode (Waveshare RP2040 Zero):
+  GP16 → RGB NeoPixel — color-coded per event
 
 Serial: USB serial (/dev/tty.usbmodem*) from Mac hook scripts
   Incoming JSON: {"type": "notification"|"permission"|"idle", "level": "info"|"warn"|"error"}
@@ -19,18 +22,21 @@ Serial: USB serial (/dev/tty.usbmodem*) from Mac hook scripts
 import board
 import digitalio
 import json
-import pwmio
 import time
 import usb_cdc
 import usb_hid
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keycode import Keycode
 
+# ── Board config ──────────────────────────────────────────────
+# True  = Waveshare RP2040 Zero (NeoPixel on GP16)
+# False = Raspberry Pi Pico    (LEDs on GP10/GP11/GP12)
+USE_NEOPIXEL = True
+
 # ── USB Keyboard ──────────────────────────────────────────────
 kbd = Keyboard(usb_hid.devices)
 
 # ── USB Serial data port (separate from REPL console) ────────
-# This is /dev/tty.usbmodem*2 on Mac — does not conflict with HID
 serial = usb_cdc.data
 
 # ── Buttons (active low via internal pull-up) ─────────────────
@@ -44,50 +50,75 @@ btn_allow_once   = make_button(board.GP2)
 btn_always_allow = make_button(board.GP3)
 btn_reject       = make_button(board.GP4)
 
-# ── LEDs (PWM for brightness control) ────────────────────────
-def make_led(pin):
-    return pwmio.PWMOut(pin, frequency=1000, duty_cycle=0)
+# ── LED setup ─────────────────────────────────────────────────
+if USE_NEOPIXEL:
+    import neopixel
+    np = neopixel.NeoPixel(board.GP16, 1, brightness=1.0, auto_write=True)
 
-led_allow_once   = make_led(board.GP10)
-led_always_allow = make_led(board.GP11)
-led_reject       = make_led(board.GP12)
+    def all_leds_off():
+        np[0] = (0, 0, 0)
 
-LEDS = [led_allow_once, led_always_allow, led_reject]
+    def set_waiting_leds():
+        np[0] = (255, 255, 255)  # white = waiting for input
 
-# PWM duty cycle constants (0–65535)
-BRIGHT = 65535       # 100% — active LED
-DIM    = 8000        # ~12% — trailing glow
-OFF    = 0
+    def neo_flash(r, g, b, times=1, on_ms=200, off_ms=80):
+        for _ in range(times):
+            np[0] = (r, g, b)
+            time.sleep(on_ms / 1000)
+            np[0] = (0, 0, 0)
+            time.sleep(off_ms / 1000)
 
-# ── Helpers ───────────────────────────────────────────────────
-def all_leds_off():
-    for led in LEDS:
-        led.duty_cycle = OFF
+    def flash_all(times=3, on_ms=80, off_ms=80):
+        neo_flash(255, 255, 255, times, on_ms, off_ms)
 
-def set_led(index, duty):
-    LEDS[index].duty_cycle = duty
+    # Breathing state
+    BREATH_MAX  = 80
+    BREATH_STEP = 3
+    BREATH_MS   = 30
+    breath_val  = 0
+    breath_dir  = BREATH_STEP
+    breath_next = 0
 
-def all_leds_on():
-    for led in LEDS:
-        led.duty_cycle = BRIGHT
+else:
+    import pwmio
 
-def flash_all(times=3, on_ms=80, off_ms=80):
-    for _ in range(times):
-        all_leds_on()
-        time.sleep(on_ms / 1000)
-        all_leds_off()
-        time.sleep(off_ms / 1000)
+    def make_led(pin):
+        return pwmio.PWMOut(pin, frequency=1000, duty_cycle=0)
 
-def set_waiting_leds():
-    all_leds_on()
+    led_allow_once   = make_led(board.GP10)
+    led_always_allow = make_led(board.GP11)
+    led_reject       = make_led(board.GP12)
+    LEDS  = [led_allow_once, led_always_allow, led_reject]
+    BRIGHT = 65535
+    DIM    = 8000
+    OFF    = 0
 
-def send_key(keycode):
-    kbd.press(keycode)
-    time.sleep(0.05)
-    kbd.release_all()
-    time.sleep(0.05)
+    def all_leds_off():
+        for led in LEDS:
+            led.duty_cycle = OFF
 
-# ── Serial line buffer ────────────────────────────────────────
+    def set_led(index, duty):
+        LEDS[index].duty_cycle = duty
+
+    def set_waiting_leds():
+        for led in LEDS:
+            led.duty_cycle = BRIGHT
+
+    def flash_all(times=3, on_ms=80, off_ms=80):
+        for _ in range(times):
+            set_waiting_leds()
+            time.sleep(on_ms / 1000)
+            all_leds_off()
+            time.sleep(off_ms / 1000)
+
+    # KITT state
+    KNIGHT_SEQUENCE = [0, 1, 2, 1]
+    KNIGHT_STEP_MS  = 1000
+    knight_step = 0
+    knight_prev = -1
+    knight_next = 0
+
+# ── Serial helpers ────────────────────────────────────────────
 serial_buf = ""
 
 def read_serial_line():
@@ -105,7 +136,13 @@ def read_serial_line():
         pass
     return None
 
-# ── Startup flash (confirms code.py is running) ───────────────
+def send_key(keycode):
+    kbd.press(keycode)
+    time.sleep(0.05)
+    kbd.release_all()
+    time.sleep(0.05)
+
+# ── Startup flash ─────────────────────────────────────────────
 flash_all(times=2, on_ms=100, off_ms=100)
 
 # ── State ─────────────────────────────────────────────────────
@@ -113,20 +150,13 @@ STATE_IDLE       = "idle"
 STATE_PERMISSION = "permission"
 state = STATE_IDLE
 
-# ── KITT animation (idle state only) ─────────────────────────
-# Sequence bounces: LED0 → LED1 → LED2 → LED1 → LED0 → ...
-# Active LED is bright; previous LED stays dimly lit as a trail.
-KNIGHT_SEQUENCE = [0, 1, 2, 1]
-KNIGHT_STEP_MS  = 1000
-knight_step = 0
-knight_prev = -1     # index of trailing LED (-1 = none)
-knight_next = 0      # advance immediately on first loop
-kitt_enabled = False  # toggled by pressing Button 2 + Button 3 simultaneously
+# kitt_enabled controls both KITT (regular) and breathing (NeoPixel)
+kitt_enabled = False  # toggle with Button 2 + Button 3 simultaneously
 
 # ── Main loop ─────────────────────────────────────────────────
 DEBOUNCE_MS = 50
-last_press = 0
-last_combo = 0
+last_press  = 0
+last_combo  = 0
 
 while True:
     now = time.monotonic_ns() // 1_000_000  # ms
@@ -135,44 +165,55 @@ while True:
     if (now - last_press) > DEBOUNCE_MS:
         if not btn_allow_once.value:
             all_leds_off()
-            set_led(0, BRIGHT)
             send_key(Keycode.ONE)
-            time.sleep(0.2)
-            all_leds_off()
+            if USE_NEOPIXEL:
+                neo_flash(0, 255, 0, times=1, on_ms=200)   # green
+            else:
+                set_led(0, BRIGHT)
+                time.sleep(0.2)
+                all_leds_off()
             last_press = now
 
         elif not btn_always_allow.value or not btn_reject.value:
-            # Wait 40ms to see if both buttons get pressed (combo window)
+            # Wait 40ms to see if both get pressed (combo window)
             time.sleep(0.04)
             btn2 = not btn_always_allow.value
             btn3 = not btn_reject.value
 
             if btn2 and btn3:
-                # Combo: toggle KITT mode
+                # Combo: toggle KITT / breathing mode
                 if (now - last_combo) > 500:
                     kitt_enabled = not kitt_enabled
                     if not kitt_enabled:
                         all_leds_off()
+                    if USE_NEOPIXEL:
+                        breath_val = 0
+                        breath_dir = BREATH_STEP
                     last_combo = now
             elif btn2:
                 all_leds_off()
-                set_led(1, BRIGHT)
                 send_key(Keycode.TWO)
-                time.sleep(0.2)
-                all_leds_off()
+                if USE_NEOPIXEL:
+                    neo_flash(0, 0, 255, times=1, on_ms=200)  # blue
+                else:
+                    set_led(1, BRIGHT)
+                    time.sleep(0.2)
+                    all_leds_off()
             elif btn3:
                 all_leds_off()
-                set_led(2, BRIGHT)
                 send_key(Keycode.THREE)
-                time.sleep(0.2)
-                all_leds_off()
+                if USE_NEOPIXEL:
+                    neo_flash(255, 0, 0, times=1, on_ms=200)  # red
+                else:
+                    set_led(2, BRIGHT)
+                    time.sleep(0.2)
+                    all_leds_off()
             last_press = now
 
-    # ── KITT animation (idle only, non-blocking) ──────────────
-    if state == STATE_IDLE and kitt_enabled and now >= knight_next:
+    # ── KITT animation (regular LEDs, non-blocking) ───────────
+    if not USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and now >= knight_next:
         all_leds_off()
         curr = KNIGHT_SEQUENCE[knight_step]
-        # Trail: previous position stays dimly lit
         if knight_prev >= 0 and knight_prev != curr:
             set_led(knight_prev, DIM)
         set_led(curr, BRIGHT)
@@ -180,13 +221,25 @@ while True:
         knight_step = (knight_step + 1) % len(KNIGHT_SEQUENCE)
         knight_next = now + KNIGHT_STEP_MS
 
+    # ── Breathing animation (NeoPixel, non-blocking) ──────────
+    if USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and now >= breath_next:
+        breath_val += breath_dir
+        if breath_val >= BREATH_MAX:
+            breath_val = BREATH_MAX
+            breath_dir = -BREATH_STEP
+        elif breath_val <= 0:
+            breath_val = 0
+            breath_dir = BREATH_STEP
+        np[0] = (breath_val, 0, 0)
+        breath_next = now + BREATH_MS
+
     # ── Incoming serial from Mac ──────────────────────────────
     line = read_serial_line()
     if line:
         print("received:", line)
         try:
             msg = json.loads(line)
-            t = msg.get("type", "")
+            t     = msg.get("type", "")
             level = msg.get("level", "info")
 
             if t == "permission":
@@ -194,25 +247,43 @@ while True:
                 set_waiting_leds()
 
             elif t == "notification":
+                all_leds_off()
                 if level == "error":
-                    all_leds_off()
-                    for _ in range(5):
-                        set_led(2, BRIGHT)
-                        time.sleep(0.1)
-                        set_led(2, OFF)
-                        time.sleep(0.1)
+                    if USE_NEOPIXEL:
+                        neo_flash(255, 0, 0, times=5, on_ms=100, off_ms=100)
+                    else:
+                        for _ in range(5):
+                            set_led(2, BRIGHT)
+                            time.sleep(0.1)
+                            set_led(2, OFF)
+                            time.sleep(0.1)
                 elif level == "warn":
-                    flash_all(times=3)
+                    if USE_NEOPIXEL:
+                        neo_flash(255, 165, 0, times=3)  # orange
+                    else:
+                        flash_all(times=3)
                 else:
-                    flash_all(times=1, on_ms=200)
+                    if USE_NEOPIXEL:
+                        neo_flash(255, 255, 255, times=1, on_ms=200)  # white
+                    else:
+                        flash_all(times=1, on_ms=200)
                 state = STATE_IDLE
-                knight_prev = -1
-                knight_next = now + KNIGHT_STEP_MS
+                if USE_NEOPIXEL:
+                    breath_val = 0
+                    breath_next = now + BREATH_MS
+                else:
+                    knight_prev = -1
+                    knight_next = now + KNIGHT_STEP_MS
 
             elif t == "idle":
                 state = STATE_IDLE
-                knight_prev = -1
-                knight_next = now + KNIGHT_STEP_MS
+                all_leds_off()
+                if USE_NEOPIXEL:
+                    breath_val = 0
+                    breath_next = now + BREATH_MS
+                else:
+                    knight_prev = -1
+                    knight_next = now + KNIGHT_STEP_MS
 
         except (ValueError, KeyError) as e:
             print("JSON error:", e, "line:", line)
