@@ -31,10 +31,10 @@ from adafruit_hid.keycode import Keycode
 
 # ── Config ────────────────────────────────────────────────────
 
-# Board selection
-# True  = Waveshare RP2040 Zero (NeoPixel on GP16)
-# False = Raspberry Pi Pico    (LEDs on GP10/GP11/GP12)
-USE_NEOPIXEL = False
+# Board auto-detection — no manual change needed
+# NeoPixel boards: Waveshare RP2040 Zero, Seeed XIAO RP2040
+# Discrete LED boards: Raspberry Pi Pico, Pico W (default)
+USE_NEOPIXEL = board.board_id in ("waveshare_rp2040_zero", "seeeduino_xiao_rp2040")
 
 # NeoPixel breathing animation
 BREATH_PERIOD = 4.0   # seconds per full breath cycle
