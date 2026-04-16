@@ -1,4 +1,6 @@
 hooks/hook.log
+*.zip
+*.webloc
 *.key
 !docs/Gavel.key
 .DS_Store
