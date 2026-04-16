@@ -34,7 +34,7 @@ from adafruit_hid.keycode import Keycode
 # Board selection
 # True  = Waveshare RP2040 Zero (NeoPixel on GP16)
 # False = Raspberry Pi Pico    (LEDs on GP10/GP11/GP12)
-USE_NEOPIXEL = True
+USE_NEOPIXEL = False
 
 # NeoPixel breathing animation
 BREATH_PERIOD = 4.0   # seconds per full breath cycle
