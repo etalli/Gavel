@@ -50,6 +50,9 @@ DEBOUNCE_MS = 50
 # Permission timeout — return to idle if no response within this time
 PERMISSION_TIMEOUT_MS = 5_000
 
+# KITT / breathing mode — toggle with Button 2 + Button 3 simultaneously
+KITT_DEFAULT = False
+
 # ── USB Keyboard ──────────────────────────────────────────────
 kbd = Keyboard(usb_hid.devices)
 
@@ -159,8 +162,7 @@ STATE_IDLE       = "idle"
 STATE_PERMISSION = "permission"
 state = STATE_IDLE
 
-# kitt_enabled controls KITT (Pico) and breathing (NeoPixel)
-kitt_enabled = True  # toggle with Button 2 + Button 3 simultaneously
+kitt_enabled = KITT_DEFAULT  # runtime toggle; default set in config block above
 
 # ── Main loop ─────────────────────────────────────────────────
 last_press       = 0

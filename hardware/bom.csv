@@ -1,8 +1,0 @@
-Qty,Part,Description,Notes
-1,Raspberry Pi Pico,RP2040 microcontroller,Any Pico variant works; Pico W adds WiFi (not needed)
-4,Tactile push button,6x6mm momentary switches,3x for Allow/Reject/Always + 1x for Reset
-3,LED 5mm,2x green + 1x red,~20mA forward current
-3,Resistor 220Ω,Current limiting for LEDs,1/4W
-1,USB-A to Micro-USB cable,Power + data to Mac,Or USB-C adapter if using Pico 2
-1,Enclosure,Project box ~100x60x30mm,3D-printed or ABS project box
-3,M2 screws,Mounting buttons/PCB,Optional
