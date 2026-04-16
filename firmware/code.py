@@ -47,6 +47,9 @@ KNIGHT_STEP_MS = 1000  # ms per LED step
 # Button debounce
 DEBOUNCE_MS = 50
 
+# Permission timeout — return to idle if no response within this time
+PERMISSION_TIMEOUT_MS = 5_000
+
 # ── USB Keyboard ──────────────────────────────────────────────
 kbd = Keyboard(usb_hid.devices)
 
@@ -160,8 +163,9 @@ state = STATE_IDLE
 kitt_enabled = True  # toggle with Button 2 + Button 3 simultaneously
 
 # ── Main loop ─────────────────────────────────────────────────
-last_press = 0
-last_combo = 0
+last_press       = 0
+last_combo       = 0
+permission_time  = 0  # timestamp when STATE_PERMISSION was entered
 
 while True:
     now = time.monotonic_ns() // 1_000_000  # ms
@@ -212,6 +216,11 @@ while True:
                     all_leds_off()
             last_press = now
 
+    # ── Permission timeout ────────────────────────────────────
+    if state == STATE_PERMISSION and (now - permission_time) > PERMISSION_TIMEOUT_MS:
+        state = STATE_IDLE
+        all_leds_off()
+
     # ── NeoPixel breathing (sine wave, non-blocking) ──────────
     if USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and now >= breath_next:
         t = time.monotonic()
@@ -241,6 +250,7 @@ while True:
 
             if t == "permission":
                 state = STATE_PERMISSION
+                permission_time = now
                 set_waiting_leds()
 
             elif t == "notification":
