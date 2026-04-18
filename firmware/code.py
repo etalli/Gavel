@@ -130,6 +130,29 @@ else:
     knight_prev = -1
     knight_next = 0
 
+# ── Notification flash helper ─────────────────────────────────
+def flash_for_level(level):
+    all_leds_off()
+    if level == "error":
+        if USE_NEOPIXEL:
+            neo_flash(255, 0, 0, times=5, on_ms=100, off_ms=100)
+        else:
+            for _ in range(5):
+                set_led(2, BRIGHT)
+                time.sleep(0.1)
+                set_led(2, OFF)
+                time.sleep(0.1)
+    elif level == "warn":
+        if USE_NEOPIXEL:
+            neo_flash(255, 165, 0, times=3)  # orange
+        else:
+            flash_all(times=3)
+    else:
+        if USE_NEOPIXEL:
+            neo_flash(255, 255, 255, times=1, on_ms=200)  # white
+        else:
+            flash_all(times=1, on_ms=200)
+
 # ── Serial helpers ────────────────────────────────────────────
 serial_buf = ""
 
@@ -256,26 +279,7 @@ while True:
                 set_waiting_leds()
 
             elif msg_type == "notification":
-                all_leds_off()
-                if level == "error":
-                    if USE_NEOPIXEL:
-                        neo_flash(255, 0, 0, times=5, on_ms=100, off_ms=100)
-                    else:
-                        for _ in range(5):
-                            set_led(2, BRIGHT)
-                            time.sleep(0.1)
-                            set_led(2, OFF)
-                            time.sleep(0.1)
-                elif level == "warn":
-                    if USE_NEOPIXEL:
-                        neo_flash(255, 165, 0, times=3)  # orange
-                    else:
-                        flash_all(times=3)
-                else:
-                    if USE_NEOPIXEL:
-                        neo_flash(255, 255, 255, times=1, on_ms=200)  # white
-                    else:
-                        flash_all(times=1, on_ms=200)
+                flash_for_level(level)
                 state = STATE_IDLE
                 if not USE_NEOPIXEL:
                     knight_prev = -1
