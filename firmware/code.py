@@ -247,15 +247,15 @@ while True:
         print("received:", line)
         try:
             msg = json.loads(line)
-            t     = msg.get("type", "")
-            level = msg.get("level", "info")
+            msg_type = msg.get("type", "")
+            level    = msg.get("level", "info")
 
-            if t == "permission":
+            if msg_type == "permission":
                 state = STATE_PERMISSION
                 permission_time = now
                 set_waiting_leds()
 
-            elif t == "notification":
+            elif msg_type == "notification":
                 all_leds_off()
                 if level == "error":
                     if USE_NEOPIXEL:
@@ -281,7 +281,7 @@ while True:
                     knight_prev = -1
                     knight_next = now + KNIGHT_STEP_MS
 
-            elif t == "idle":
+            elif msg_type == "idle":
                 state = STATE_IDLE
                 all_leds_off()
                 if not USE_NEOPIXEL:
