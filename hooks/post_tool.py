@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from pico import send_to_pico
 
 USAGE_WARN_THRESHOLD = 0.9  # warn when context window is 90%+ full
+LOG = os.path.join(os.path.dirname(__file__), "post_tool_payload.log")
 
 
 def main():
@@ -19,6 +20,10 @@ def main():
         data = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError):
         data = {}
+
+    # Debug: log raw payload to verify context_window_utilization field
+    with open(LOG, "w") as f:
+        json.dump(data, f, indent=2)
 
     tool_name = data.get("tool_name", "unknown")
     usage = data.get("context_window_utilization", 0.0)
