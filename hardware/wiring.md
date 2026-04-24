@@ -1,11 +1,11 @@
 # Gavel Wiring Reference
 
-Both supported boards use the same GPIO numbers. Set `USE_NEOPIXEL` in `firmware/code.py` to match your board.
+Both supported boards use the same GPIO numbers. Board type is auto-detected — no manual configuration needed.
 
-| Board | `USE_NEOPIXEL` | LED output |
-|-------|---------------|------------|
-| Raspberry Pi Pico | `False` | 3× discrete LEDs on GP10/GP11/GP12 |
-| Waveshare RP2040 Zero | `True` | RGB NeoPixel on GP16 (built-in) |
+| Board | LED output |
+|-------|------------|
+| Raspberry Pi Pico | 3× discrete LEDs on GP10/GP11/GP12 |
+| Waveshare RP2040 Zero | RGB NeoPixel on GP16 (built-in) |
 
 ---
 

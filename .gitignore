@@ -1,4 +1,4 @@
-hooks/hook.log
+hooks/*.log
 *.zip
 *.webloc
 *.key

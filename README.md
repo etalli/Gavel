@@ -1,4 +1,4 @@
-# Gavel
+# Gavel (270)
 
 <img src="docs/icon-128.png" alt="Gavel icon" align="right"/>
 
@@ -19,10 +19,12 @@ A physical controller for [Claude Code](https://claude.ai/code).
 
 Two boards are supported:
 
-| Board | LED output | Config |
-|-------|-----------|--------|
-| Raspberry Pi Pico | 3× discrete LEDs (GP10/GP11/GP12) | `USE_NEOPIXEL = False` |
-| Waveshare RP2040 Zero | Built-in RGB NeoPixel (GP16) | `USE_NEOPIXEL = True` |
+| Board | LED output |
+|-------|-----------|
+| Raspberry Pi Pico | 3× discrete LEDs (GP10/GP11/GP12) |
+| Waveshare RP2040 Zero | Built-in RGB NeoPixel (GP16) |
+
+Board type is auto-detected — no manual configuration needed.
 
 Both use the same GPIO pins for buttons (GP2/GP3/GP4). See [`hardware/wiring.md`](hardware/wiring.md) for full pin assignments.
 
