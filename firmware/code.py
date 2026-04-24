@@ -3,14 +3,14 @@ Gavel – Claude Code physical controller
 Raspberry Pi Pico / Waveshare RP2040 Zero firmware (CircuitPython)
 
 Buttons (both boards):
-  GP2 → Allow Once   → sends '1'
-  GP3 → Always Allow → sends '2'
-  GP4 → Reject       → sends '3'
+  GP14 → Allow Once   → sends '1'
+  GP15 → Always Allow → sends '2'
+  GP26 → Reject       → sends '3'
 
 Regular LED mode (Raspberry Pi Pico):
-  GP10 → Allow Once   (green)
-  GP11 → Always Allow (green)
-  GP12 → Reject       (red)
+  GP2 → Allow Once   (green)
+  GP3 → Always Allow (green)
+  GP4 → Reject       (red)
 
 NeoPixel mode (Waveshare RP2040 Zero):
   GP16 → RGB NeoPixel — color-coded per event
@@ -66,9 +66,16 @@ def make_button(pin):
     b.pull = digitalio.Pull.UP
     return b
 
-btn_allow_once   = make_button(board.GP2)
-btn_always_allow = make_button(board.GP3)
-btn_reject       = make_button(board.GP4)
+btn_allow_once   = make_button(board.GP14)
+btn_always_allow = make_button(board.GP15)
+btn_reject       = make_button(board.GP26)
+
+# Each entry: (button_object, keycode, NeoPixel_color, discrete_LED_index)
+BUTTONS = [
+    (btn_allow_once,   Keycode.ONE,   (0, 255, 0), 0),
+    (btn_always_allow, Keycode.TWO,   (0, 0, 255), 1),
+    (btn_reject,       Keycode.THREE, (255, 0, 0), 2),
+]
 
 # ── LED setup ─────────────────────────────────────────────────
 import pwmio
@@ -81,9 +88,9 @@ OFF    = 0
 def make_led(pin):
     return pwmio.PWMOut(pin, frequency=1000, duty_cycle=OFF)
 
-led_allow_once   = make_led(board.GP10)
-led_always_allow = make_led(board.GP11)
-led_reject       = make_led(board.GP12)
+led_allow_once   = make_led(board.GP2)
+led_always_allow = make_led(board.GP3)
+led_reject       = make_led(board.GP4)
 LEDS   = [led_allow_once, led_always_allow, led_reject]
 
 if USE_NEOPIXEL:
@@ -176,6 +183,15 @@ def send_key(keycode):
     kbd.release_all()
     time.sleep(0.05)
 
+def press_button(keycode, color, led_idx):
+    all_leds_off()
+    send_key(keycode)
+    if USE_NEOPIXEL:
+        np[0] = color
+    set_led(led_idx, BRIGHT)
+    time.sleep(0.2)
+    all_leds_off()
+
 # ── Startup flash ─────────────────────────────────────────────
 flash_all(times=2, on_ms=100, off_ms=100)
 
@@ -197,44 +213,27 @@ while True:
     # ── Button input ──────────────────────────────────────────
     if (now - last_press) > DEBOUNCE_MS:
         if not btn_allow_once.value:
-            all_leds_off()
-            send_key(Keycode.ONE)
-            if USE_NEOPIXEL:
-                np[0] = (0, 255, 0)  # green
-            set_led(0, BRIGHT)
-            time.sleep(0.2)
-            all_leds_off()
+            press_button(*BUTTONS[0][1:])
             last_press = now
 
         elif not btn_always_allow.value or not btn_reject.value:
             # Wait 40ms to see if both get pressed (combo window)
             time.sleep(0.04)
-            btn2 = not btn_always_allow.value
-            btn3 = not btn_reject.value
+            b2 = not btn_always_allow.value
+            b3 = not btn_reject.value
 
-            if btn2 and btn3:
+            if b2 and b3:
                 # Combo: toggle KITT / breathing mode
                 if (now - last_combo) > 500:
                     kitt_enabled = not kitt_enabled
                     if not kitt_enabled:
                         all_leds_off()
                     last_combo = now
-            elif btn2:
-                all_leds_off()
-                send_key(Keycode.TWO)
-                if USE_NEOPIXEL:
-                    np[0] = (0, 0, 255)  # blue
-                set_led(1, BRIGHT)
-                time.sleep(0.2)
-                all_leds_off()
-            elif btn3:
-                all_leds_off()
-                send_key(Keycode.THREE)
-                if USE_NEOPIXEL:
-                    np[0] = (255, 0, 0)  # red
-                set_led(2, BRIGHT)
-                time.sleep(0.2)
-                all_leds_off()
+            else:
+                for btn, keycode, color, led_idx in BUTTONS[1:]:
+                    if not btn.value:
+                        press_button(keycode, color, led_idx)
+                        break
             last_press = now
 
     # ── Permission timeout ────────────────────────────────────
