@@ -73,16 +73,19 @@ btn_reject       = make_button(board.GP4)
 # ── LED setup ─────────────────────────────────────────────────
 import pwmio
 
+# RP2040 Zero PCB uses common-anode LEDs (active-low): GPIO LOW = on.
+# Pico uses common-cathode (active-high): GPIO HIGH = on.
+BRIGHT = 0     if USE_NEOPIXEL else 65535
+DIM    = 57535 if USE_NEOPIXEL else 8000
+OFF    = 65535 if USE_NEOPIXEL else 0
+
 def make_led(pin):
-    return pwmio.PWMOut(pin, frequency=1000, duty_cycle=0)
+    return pwmio.PWMOut(pin, frequency=1000, duty_cycle=OFF)
 
 led_allow_once   = make_led(board.GP10)
 led_always_allow = make_led(board.GP11)
 led_reject       = make_led(board.GP12)
 LEDS   = [led_allow_once, led_always_allow, led_reject]
-BRIGHT = 65535
-DIM    = 8000
-OFF    = 0
 
 if USE_NEOPIXEL:
     import neopixel
