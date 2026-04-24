@@ -70,7 +70,7 @@ Notification flash patterns:
 | Component       | Part                        | Notes                                  |
 |-----------------|-----------------------------|----------------------------------------|
 | Microcontroller | Waveshare RP2040 Zero       | RP2040, CircuitPython firmware         |
-| Buttons (×3)    | 6×6mm tactile switch        | Internal pull-up, active low, GP2/3/4  |
+| Buttons (×3)    | 6×6mm tactile switch        | Internal pull-up, active low, GP14/15/26 |
 | Reset button    | 6×6mm tactile switch        | RESET pin to GND, no resistor          |
 | LED output      | Built-in RGB NeoPixel       | GP16 (WS2812), color-coded per event   |
 | Connection      | USB-C cable                 | Powers the board + HID + serial        |
@@ -79,7 +79,7 @@ Notification flash patterns:
 
 | Board                  | LED output                    |
 |------------------------|-------------------------------|
-| Raspberry Pi Pico      | 3× discrete LEDs (GP10/11/12) |
+| Raspberry Pi Pico      | 3× discrete LEDs (GP2/3/4) |
 | Seeed XIAO RP2040      | Built-in RGB NeoPixel         |
 
 Board type is detected automatically at runtime via `board.board_id` — no

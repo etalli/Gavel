@@ -54,7 +54,7 @@ hardware at runtime. This eliminates any manual configuration. All subsequent
 LED code branches on `USE_NEOPIXEL`:
 
 - `True`  → NeoPixel path (single RGB LED on `board.NEOPIXEL`)
-- `False` → PWM path (three separate LEDs on GP10 / GP11 / GP12)
+- `False` → PWM path (three separate LEDs on GP2 / GP3 / GP4)
 
 ---
 
@@ -193,9 +193,9 @@ Each LED maps to a button:
 
 | LED index | GPIO  | Color | Button        |
 |-----------|-------|-------|---------------|
-| 0         | GP10  | Green | Allow Once    |
-| 1         | GP11  | Green | Always Allow  |
-| 2         | GP12  | Red   | Reject        |
+| 0         | GP2   | Green | Allow Once    |
+| 1         | GP3   | Green | Always Allow  |
+| 2         | GP4   | Red   | Reject        |
 
 ---
 

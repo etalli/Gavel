@@ -4,8 +4,8 @@ Both supported boards use the same GPIO numbers. Board type is auto-detected —
 
 | Board | LED output |
 |-------|------------|
-| Raspberry Pi Pico | 3× discrete LEDs on GP10/GP11/GP12 |
-| Waveshare RP2040 Zero | Built-in RGB NeoPixel on GP16 + 3× discrete LEDs on GP10/GP11/GP12 |
+| Raspberry Pi Pico | 3× discrete LEDs on GP2/GP3/GP4 |
+| Waveshare RP2040 Zero | Built-in RGB NeoPixel on GP16 + 3× discrete LEDs on GP2/GP3/GP4 |
 
 ---
 
@@ -16,9 +16,9 @@ The internal pull-up is used — no external resistor needed.
 
 | Button       | GPIO |
 |--------------|------|
-| Allow Once   | GP2  |
-| Always Allow | GP3  |
-| Reject       | GP4  |
+| Allow Once   | GP14 |
+| Always Allow | GP15 |
+| Reject       | GP26 |
 
 Wiring per button:
 ```
@@ -31,9 +31,9 @@ Each LED needs a 220Ω resistor in series.
 
 | LED          | Pico Pin | GPIO | Color |
 |--------------|----------|------|-------|
-| Allow Once   | Pin 14   | GP10 | Green |
-| Always Allow | Pin 15   | GP11 | Green |
-| Reject       | Pin 16   | GP12 | Red   |
+| Allow Once   | Pin 4    | GP2  | Green |
+| Always Allow | Pin 5    | GP3  | Green |
+| Reject       | Pin 6    | GP4  | Red   |
 
 ```
 GPIO pin ──[220Ω]──[LED anode → cathode]── GND
@@ -49,9 +49,9 @@ Same pin assignment and wiring as the Pico. Each LED needs a 220Ω resistor in s
 
 | LED          | GPIO | Color |
 |--------------|------|-------|
-| Allow Once   | GP10 | Green |
-| Always Allow | GP11 | Green |
-| Reject       | GP12 | Red   |
+| Allow Once   | GP2  | Green |
+| Always Allow | GP3  | Green |
+| Reject       | GP4  | Red   |
 
 ```
 GPIO pin ──[220Ω]──[LED anode → cathode]── GND
