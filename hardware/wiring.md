@@ -5,7 +5,7 @@ Both supported boards use the same GPIO numbers. Board type is auto-detected —
 | Board | LED output |
 |-------|------------|
 | Raspberry Pi Pico | 3× discrete LEDs on GP10/GP11/GP12 |
-| Waveshare RP2040 Zero | RGB NeoPixel on GP16 (built-in) |
+| Waveshare RP2040 Zero | Built-in RGB NeoPixel on GP16 + 3× discrete LEDs on GP10/GP11/GP12 |
 
 ---
 
@@ -41,7 +41,25 @@ GPIO pin ──[220Ω]──[LED anode → cathode]── GND
 
 ## LEDs — Waveshare RP2040 Zero
 
-The RP2040 Zero has a built-in RGB NeoPixel on GP16. No external LEDs or resistors needed.
+The RP2040 Zero drives both the built-in RGB NeoPixel (GP16) and three discrete LEDs (GP10/GP11/GP12) simultaneously.
+
+### Discrete LEDs
+
+Same pin assignment and wiring as the Pico. Each LED needs a 220Ω resistor in series.
+
+| LED          | GPIO | Color |
+|--------------|------|-------|
+| Allow Once   | GP10 | Green |
+| Always Allow | GP11 | Green |
+| Reject       | GP12 | Red   |
+
+```
+GPIO pin ──[220Ω]──[LED anode → cathode]── GND
+```
+
+### NeoPixel (built-in)
+
+No external LEDs or resistors needed.
 
 Color coding:
 
