@@ -71,87 +71,84 @@ btn_always_allow = make_button(board.GP3)
 btn_reject       = make_button(board.GP4)
 
 # ── LED setup ─────────────────────────────────────────────────
+import pwmio
+
+def make_led(pin):
+    return pwmio.PWMOut(pin, frequency=1000, duty_cycle=0)
+
+led_allow_once   = make_led(board.GP10)
+led_always_allow = make_led(board.GP11)
+led_reject       = make_led(board.GP12)
+LEDS   = [led_allow_once, led_always_allow, led_reject]
+BRIGHT = 65535
+DIM    = 8000
+OFF    = 0
+
 if USE_NEOPIXEL:
     import neopixel
     np = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=1.0, auto_write=True)
-
-    def all_leds_off():
-        np[0] = (0, 0, 0)
-
-    def set_waiting_leds():
-        np[0] = (255, 255, 255)  # white = waiting for input
-
-    def neo_flash(r, g, b, times=1, on_ms=200, off_ms=80):
-        for _ in range(times):
-            np[0] = (r, g, b)
-            time.sleep(on_ms / 1000)
-            np[0] = (0, 0, 0)
-            time.sleep(off_ms / 1000)
-
-    def flash_all(times=3, on_ms=80, off_ms=80):
-        neo_flash(255, 255, 255, times, on_ms, off_ms)
-
     breath_next = 0
 
-else:
-    import pwmio
+KNIGHT_SEQUENCE = [0, 1, 2, 1]
+knight_step = 0
+knight_prev = -1
+knight_next = 0
 
-    def make_led(pin):
-        return pwmio.PWMOut(pin, frequency=1000, duty_cycle=0)
+def all_leds_off():
+    if USE_NEOPIXEL:
+        np[0] = (0, 0, 0)
+    for led in LEDS:
+        led.duty_cycle = OFF
 
-    led_allow_once   = make_led(board.GP10)
-    led_always_allow = make_led(board.GP11)
-    led_reject       = make_led(board.GP12)
-    LEDS   = [led_allow_once, led_always_allow, led_reject]
-    BRIGHT = 65535
-    DIM    = 8000
-    OFF    = 0
+def set_led(index, duty):
+    LEDS[index].duty_cycle = duty
 
-    def all_leds_off():
-        for led in LEDS:
-            led.duty_cycle = OFF
+def set_waiting_leds():
+    if USE_NEOPIXEL:
+        np[0] = (255, 255, 255)
+    for led in LEDS:
+        led.duty_cycle = BRIGHT
 
-    def set_led(index, duty):
-        LEDS[index].duty_cycle = duty
-
-    def set_waiting_leds():
+def flash_all(times=3, on_ms=80, off_ms=80):
+    for _ in range(times):
+        if USE_NEOPIXEL:
+            np[0] = (255, 255, 255)
         for led in LEDS:
             led.duty_cycle = BRIGHT
-
-    def flash_all(times=3, on_ms=80, off_ms=80):
-        for _ in range(times):
-            set_waiting_leds()
-            time.sleep(on_ms / 1000)
-            all_leds_off()
-            time.sleep(off_ms / 1000)
-
-    KNIGHT_SEQUENCE = [0, 1, 2, 1]
-    knight_step = 0
-    knight_prev = -1
-    knight_next = 0
+        time.sleep(on_ms / 1000)
+        if USE_NEOPIXEL:
+            np[0] = (0, 0, 0)
+        for led in LEDS:
+            led.duty_cycle = OFF
+        time.sleep(off_ms / 1000)
 
 # ── Notification flash helper ─────────────────────────────────
 def flash_for_level(level):
     all_leds_off()
     if level == "error":
-        if USE_NEOPIXEL:
-            neo_flash(255, 0, 0, times=5, on_ms=100, off_ms=100)
-        else:
-            for _ in range(5):
-                set_led(2, BRIGHT)
-                time.sleep(0.1)
-                set_led(2, OFF)
-                time.sleep(0.1)
+        for _ in range(5):
+            if USE_NEOPIXEL:
+                np[0] = (255, 0, 0)
+            set_led(2, BRIGHT)
+            time.sleep(0.1)
+            if USE_NEOPIXEL:
+                np[0] = (0, 0, 0)
+            set_led(2, OFF)
+            time.sleep(0.1)
     elif level == "warn":
-        if USE_NEOPIXEL:
-            neo_flash(255, 165, 0, times=3)  # orange
-        else:
-            flash_all(times=3)
+        for _ in range(3):
+            if USE_NEOPIXEL:
+                np[0] = (255, 165, 0)  # orange
+            for led in LEDS:
+                led.duty_cycle = BRIGHT
+            time.sleep(0.2)
+            if USE_NEOPIXEL:
+                np[0] = (0, 0, 0)
+            for led in LEDS:
+                led.duty_cycle = OFF
+            time.sleep(0.08)
     else:
-        if USE_NEOPIXEL:
-            neo_flash(255, 255, 255, times=1, on_ms=200)  # white
-        else:
-            flash_all(times=1, on_ms=200)
+        flash_all(times=1, on_ms=200)
 
 # ── Serial helpers ────────────────────────────────────────────
 serial_buf = ""
@@ -201,11 +198,10 @@ while True:
             all_leds_off()
             send_key(Keycode.ONE)
             if USE_NEOPIXEL:
-                neo_flash(0, 255, 0, times=1, on_ms=200)   # green
-            else:
-                set_led(0, BRIGHT)
-                time.sleep(0.2)
-                all_leds_off()
+                np[0] = (0, 255, 0)  # green
+            set_led(0, BRIGHT)
+            time.sleep(0.2)
+            all_leds_off()
             last_press = now
 
         elif not btn_always_allow.value or not btn_reject.value:
@@ -225,20 +221,18 @@ while True:
                 all_leds_off()
                 send_key(Keycode.TWO)
                 if USE_NEOPIXEL:
-                    neo_flash(0, 0, 255, times=1, on_ms=200)  # blue
-                else:
-                    set_led(1, BRIGHT)
-                    time.sleep(0.2)
-                    all_leds_off()
+                    np[0] = (0, 0, 255)  # blue
+                set_led(1, BRIGHT)
+                time.sleep(0.2)
+                all_leds_off()
             elif btn3:
                 all_leds_off()
                 send_key(Keycode.THREE)
                 if USE_NEOPIXEL:
-                    neo_flash(255, 0, 0, times=1, on_ms=200)  # red
-                else:
-                    set_led(2, BRIGHT)
-                    time.sleep(0.2)
-                    all_leds_off()
+                    np[0] = (255, 0, 0)  # red
+                set_led(2, BRIGHT)
+                time.sleep(0.2)
+                all_leds_off()
             last_press = now
 
     # ── Permission timeout ────────────────────────────────────
