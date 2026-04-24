@@ -2,7 +2,7 @@
 Gavel – LED test script
 
 Cycles through each LED independently to verify wiring.
-  GP10 (green) → GP11 (green) → GP12 (red) → repeat
+  GP2 (green) → GP3 (green) → GP4 (red) → repeat
 
 Copy this file to the CIRCUITPY drive as code.py to run the test.
 Restore the original code.py when done.
@@ -18,14 +18,14 @@ def make_led(pin):
     led.value = False
     return led
 
-led_allow_once   = make_led(board.GP10)  # green
-led_always_allow = make_led(board.GP11)  # green
-led_reject       = make_led(board.GP12)  # red
+led_allow_once   = make_led(board.GP2)  # green
+led_always_allow = make_led(board.GP3)  # green
+led_reject       = make_led(board.GP4)  # red
 
 leds = [
-    (led_allow_once,   "GP10 - Allow Once   (green)"),
-    (led_always_allow, "GP11 - Always Allow (green)"),
-    (led_reject,       "GP12 - Reject       (red)"),
+    (led_allow_once,   "GP2 - Allow Once   (green)"),
+    (led_always_allow, "GP3 - Always Allow (green)"),
+    (led_reject,       "GP4 - Reject       (red)"),
 ]
 
 print("LED test starting...")
