@@ -16,7 +16,8 @@ Happy coding!
 ## 機能
 
 - **入力** — 3 つの物理ボタンで Claude Code のパーミッションプロンプトに回答します（`1` 一回許可 / `2` 常に許可 / `3` 拒否）。キーボードを触る必要はありません。
-- **出力** — Claude Code のフックイベントに応じて LED が点灯し、Claude の動作をリアルタイムでフィードバックします。
+- **出力** — Claude Code のフックイベントに応じて LED が点灯し、Claude の動作をリアルタイムでフィードバックします。ツールのリスクカテゴリ（読み取り / 書き込み / ネットワーク / 破壊的操作）によって色とパターンが変わります。
+- **ログ** — ボタンを押すたびに `~/.claude/gavel/decisions.jsonl` へ記録が追記されます。
 
 ---
 
@@ -45,14 +46,17 @@ Happy coding!
 
 2. **シリアルリスナー** — Claude Code フックが Mac 側の Python スクリプトを呼び出し、マイコンの USB シリアルポートへ小さな JSON メッセージを送信して LED を制御します。
 
-| フック | LED の反応 |
-|------|-----------|
-| `PreToolUse` | 全 LED 点灯 |
-| `PostToolUse` | 全 LED 消灯 |
-| `Notification` (info) | ゆっくり 1 回点滅 |
-| `Notification` (warn) | 中程度で 3 回点滅 |
-| `Notification` (error) | 速く 5 回点滅（赤のみ） |
-| `PostToolUse`（コンテキスト 90% 以上） | 中程度で 3 回点滅、その後消灯 |
+| フック | カテゴリ | NeoPixel | 個別 LED |
+|------|---------|---------|---------|
+| `PreToolUse` | readonly（Read / Grep / LS） | 青 | 中央 LED 暗点灯 |
+| `PreToolUse` | write（Edit / Write） | 黄 | 2 つの LED 暗点灯 |
+| `PreToolUse` | network（WebFetch / Agent） | オレンジ点滅 | 点滅 |
+| `PreToolUse` | destructive（Bash など） | 赤 | 全 LED 点灯 |
+| `PostToolUse` | — | 消灯 | 消灯 |
+| `Notification` (info) | — | ゆっくり 1 回点滅 | ゆっくり 1 回点滅 |
+| `Notification` (warn) | — | 中程度で 3 回点滅 | 中程度で 3 回点滅 |
+| `Notification` (error) | — | 速く 5 回赤点滅 | 速く 5 回点滅 |
+| `PostToolUse`（コンテキスト 90% 以上） | — | 中程度で 3 回点滅、その後消灯 | 中程度で 3 回点滅、その後消灯 |
 
 ---
 
