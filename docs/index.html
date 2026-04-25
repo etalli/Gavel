@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Gavel - A physical controller for Claude Code. Rule on tool permissions with simple hardware buttons.">
+  <title>Gavel | Physical Controller for Claude Code</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <img src="images/icon-512.png" alt="Gavel Icon" class="logo">
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1 class="title">Gavel</h1>
+        <p class="subtitle">A physical controller for Claude Code.</p>
+      </section>
+
+      <section class="content-section">
+        <h2>Why "Gavel"?</h2>
+        <p>A judge's gavel makes decisions final — and here, the human is always the judge.
+          Any keyboard could send the same keys, but a dedicated device makes you stop and think
+          instead of hitting a key on autopilot. A ruling, not a reflex.</p>
+      </section>
+
+      <div class="grid">
+        <div class="card content-section">
+          <h3>Input</h3>
+          <p>Three physical buttons answer Claude Code's permission prompts (<code>1</code> Allow Once / <code>2</code>
+            Always Allow / <code>3</code> Reject) without touching the keyboard.</p>
+        </div>
+        <div class="card content-section">
+          <h3>Output</h3>
+          <p>LEDs light up in response to Claude Code hook events, giving real-time feedback on what Claude is doing.
+          </p>
+        </div>
+      </div>
+
+      <section class="content-section">
+        <h2>How it works</h2>
+        <p>The microcontroller runs two independent roles over a single USB cable:</p>
+        <ol>
+          <li><strong>USB HID keyboard</strong> — pressing a button sends the matching keypress to the terminal. Claude
+            Code receives it exactly as if the user typed it. No special Claude Code configuration needed.</li>
+          <li><strong>Serial listener</strong> — Claude Code hooks call Python scripts on the Mac side, which send small
+            JSON messages over the microcontroller's USB serial port to control the LEDs.</li>
+        </ol>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Hook</th>
+                <th>LED response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>PreToolUse</code></td>
+                <td><span class="indicator indicator-on"></span>All LEDs solid on</td>
+              </tr>
+              <tr>
+                <td><code>PostToolUse</code></td>
+                <td><span class="indicator indicator-off"></span>All LEDs off</td>
+              </tr>
+              <tr>
+                <td><code>Notification</code> (info)</td>
+                <td><span class="indicator indicator-flash-slow"></span>Single slow flash</td>
+              </tr>
+              <tr>
+                <td><code>Notification</code> (warn)</td>
+                <td><span class="indicator indicator-flash-med"></span>Three medium flashes</td>
+              </tr>
+              <tr>
+                <td><code>Notification</code> (error)</td>
+                <td><span class="indicator indicator-flash-fast"></span>Five fast flashes (red only)</td>
+              </tr>
+              <tr>
+                <td>Idle — Pico (KITT mode)</td>
+                <td>
+                  <span class="kitt-leds">
+                    <span class="kitt-dot" id="k0"></span>
+                    <span class="kitt-dot" id="k1"></span>
+                    <span class="kitt-dot" id="k2"></span>
+                  </span>
+                  Night rider sweep
+                </td>
+              </tr>
+              <tr>
+                <td>Idle — RP2040 Zero (KITT mode)</td>
+                <td><span class="indicator indicator-breath"></span>Blue breathing fade</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Setup</h2>
+        <p>Getting started is straightforward:</p>
+        <ol>
+          <li>Install <a href="https://circuitpython.org" target="_blank" rel="noopener noreferrer">CircuitPython</a> on
+            your board</li>
+          <li>Copy <code>firmware/boot.py</code> and <code>firmware/code.py</code> to the <code>CIRCUITPY</code> drive</li>
+          <li>Copy <code>adafruit_hid/</code> (all boards) and <code>neopixel.mpy</code> (RP2040 Zero only) to <code>CIRCUITPY/lib/</code></li>
+          <li>Power cycle the board (unplug and replug USB) so <code>boot.py</code> takes effect</li>
+          <li>Install the Mac-side dependency: <code>pip3 install pyserial</code></li>
+          <li>Wire buttons and LEDs per the <a href="https://github.com/etalli/Gavel/blob/main/hardware/wiring.md" target="_blank" rel="noopener noreferrer">hardware wiring guide</a></li>
+          <li>Run <code>./install.sh --deploy</code> to register hooks in <code>~/.claude/settings.json</code></li>
+        </ol>
+      </section>
+    </main>
+
+    <footer>
+      <p>Designed for human-in-the-loop AI interactions.</p>
+      <p style="margin-top: 0.75rem;">
+        <a href="https://github.com/etalli/Gavel" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+        &nbsp;·&nbsp;
+        <a href="https://github.com/etalli/Gavel/releases" target="_blank" rel="noopener noreferrer">Releases</a>
+      </p>
+      <p style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.7;">&copy; 2026 Gavel Project. All rights reserved.
+      </p>
+    </footer>
+  </div>
+  <script>
+    const dots = [document.getElementById('k0'), document.getElementById('k1'), document.getElementById('k2')];
+    const seq = [0, 1, 2, 1];
+    let step = 0, prev = -1;
+    setInterval(() => {
+      dots.forEach(d => { d.className = 'kitt-dot'; });
+      const curr = seq[step];
+      if (prev >= 0 && prev !== curr) dots[prev].classList.add('kitt-dim');
+      dots[curr].classList.add('kitt-bright');
+      prev = curr;
+      step = (step + 1) % seq.length;
+    }, 1000);
+  </script>
+</body>
+
+</html>

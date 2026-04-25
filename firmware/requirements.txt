@@ -1,0 +1,11 @@
+# CircuitPython libraries needed in CIRCUITPY/lib/
+# Download from: https://circuitpython.org/libraries
+#
+# All boards:
+#   adafruit_hid/          (folder — from adafruit-circuitpython-hid)
+#     keyboard.py
+#     keycode.py
+#     keyboard_layout_us.py
+#
+# RP2040 Zero / XIAO RP2040 only (NeoPixel boards):
+#   neopixel.mpy           (from adafruit-circuitpython-neopixel)

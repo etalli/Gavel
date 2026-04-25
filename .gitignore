@@ -1,0 +1,10 @@
+.claude/
+CLAUDE.md
+*.zip
+*.webloc
+.DS_Store
+hooks/__pycache__/*
+hooks/*.log
+docs/Gavel.key
+hardware/PCB/
+Release.txt
