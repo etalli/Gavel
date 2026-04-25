@@ -50,6 +50,9 @@ DEBOUNCE_MS = 50
 # Permission timeout — return to idle if no response within this time
 PERMISSION_TIMEOUT_MS = 5_000
 
+# How long to hold the pressed button's LED after a decision
+DECISION_HOLD_MS = 2_000
+
 # KITT / breathing mode — toggle with Button 2 + Button 3 simultaneously
 KITT_DEFAULT = False
 
@@ -184,13 +187,13 @@ def send_key(keycode):
     time.sleep(0.05)
 
 def press_button(keycode, color, led_idx):
+    global decision_off_at
     all_leds_off()
     send_key(keycode)
     if USE_NEOPIXEL:
         np[0] = color
     set_led(led_idx, BRIGHT)
-    time.sleep(0.2)
-    all_leds_off()
+    decision_off_at = time.monotonic_ns() // 1_000_000 + DECISION_HOLD_MS
 
 # ── Startup flash ─────────────────────────────────────────────
 flash_all(times=2, on_ms=100, off_ms=100)
@@ -206,6 +209,7 @@ kitt_enabled = KITT_DEFAULT  # runtime toggle; default set in config block above
 last_press       = 0
 last_combo       = 0
 permission_time  = 0  # timestamp when STATE_PERMISSION was entered
+decision_off_at  = 0  # ms timestamp to clear the decision LED; 0 = inactive
 
 while True:
     now = time.monotonic_ns() // 1_000_000  # ms
@@ -214,6 +218,7 @@ while True:
     if (now - last_press) > DEBOUNCE_MS:
         if not btn_allow_once.value:
             press_button(*BUTTONS[0][1:])
+            state = STATE_IDLE
             last_press = now
 
         elif not btn_always_allow.value or not btn_reject.value:
@@ -233,6 +238,7 @@ while True:
                 for btn, keycode, color, led_idx in BUTTONS[1:]:
                     if not btn.value:
                         press_button(keycode, color, led_idx)
+                        state = STATE_IDLE
                         break
             last_press = now
 
@@ -241,15 +247,20 @@ while True:
         state = STATE_IDLE
         all_leds_off()
 
+    # ── Decision LED hold ─────────────────────────────────────
+    if decision_off_at and now >= decision_off_at:
+        all_leds_off()
+        decision_off_at = 0
+
     # ── NeoPixel breathing (sine wave, non-blocking) ──────────
-    if USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and now >= breath_next:
+    if USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and not decision_off_at and now >= breath_next:
         t = time.monotonic()
         brightness = int((1 - math.cos(2 * math.pi * t / BREATH_PERIOD)) / 2 * BREATH_MAX)
         np[0] = (0, 0, brightness)
         breath_next = now + BREATH_UPDATE
 
     # ── KITT animation (regular LEDs only, non-blocking) ──────
-    if not USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and now >= knight_next:
+    if not USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and not decision_off_at and now >= knight_next:
         all_leds_off()
         curr = KNIGHT_SEQUENCE[knight_step]
         if knight_prev >= 0 and knight_prev != curr:
@@ -271,6 +282,7 @@ while True:
             if msg_type == "permission":
                 state = STATE_PERMISSION
                 permission_time = now
+                decision_off_at = 0
                 set_waiting_leds()
 
             elif msg_type == "notification":

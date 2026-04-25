@@ -6,7 +6,9 @@
 
 A physical controller for [Claude Code](https://claude.ai/code). · [Landing page](https://etalli.github.io/Gavel/)
 
-**Why "Gavel"?** A judge's gavel makes decisions final — and here, the human is always the judge. Any keyboard could send the same keys, but a dedicated device makes you stop and think instead of hitting a key on autopilot. A ruling, not a reflex.
+**Why "Gavel"?** A judge's gavel makes decisions final — and here, the human is always the judge. Any keyboard could send the same keys, but a dedicated device makes you stop and think instead of pressing keys on autopilot. A ruling, not a reflex.
+In other words, "Don't blindly accept what Claude Code proposes. Pause. Think. Then decide."
+Gavel is a physical reminder and friction layer against autopilot mode.
 
 ---
 
