@@ -49,6 +49,7 @@
 | `Notification` (info) | ゆっくり 1 回点滅 |
 | `Notification` (warn) | 中程度で 3 回点滅 |
 | `Notification` (error) | 速く 5 回点滅（赤のみ） |
+| `PostToolUse`（コンテキスト 90% 以上） | 中程度で 3 回点滅、その後消灯 |
 
 ---
 

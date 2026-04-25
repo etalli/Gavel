@@ -49,7 +49,7 @@ over the device's serial port:
 | Hook event   | Script         | Device response              |
 |--------------|----------------|------------------------------|
 | PreToolUse   | pre_tool.py    | Solid white (waiting state)  |
-| PostToolUse  | post_tool.py   | All LEDs off (idle)          |
+| PostToolUse  | post_tool.py   | Warn flash if context ≥ 90%, then all LEDs off |
 | Notification | notify.py      | Flash pattern based on level |
 | Stop         | stop.py        | All LEDs off (session ended) |
 
@@ -93,11 +93,10 @@ See `hardware/wiring.md` for full pin assignments.
 
 ```
 270_Gavel/
-├── CLAUDE.md                          ← Project instructions for Claude Code
+├── LICENSE                            ← MIT License
 ├── README.md                          ← Project overview and setup guide
+├── README.ja.md                       ← Japanese translation of README
 ├── install.sh                         ← Installs hooks to ~/.claude/gavel/
-├── .claude/
-│   └── settings.json                  ← Claude Code hook configuration
 ├── firmware/
 │   ├── boot.py                        ← Enables USB CDC console + data ports at startup
 │   ├── code.py                        ← Button + LED + serial logic (main firmware)
@@ -107,14 +106,12 @@ See `hardware/wiring.md` for full pin assignments.
 │   ├── find_device.py                 ← Locates the device's data serial port on macOS
 │   ├── pico.py                        ← Shared serial send helper + logging
 │   ├── pre_tool.py                    ← Fires on PreToolUse — signals waiting state
-│   ├── post_tool.py                   ← Fires on PostToolUse — signals idle state
+│   ├── post_tool.py                   ← Fires on PostToolUse — warn if context ≥ 90%, then idle
 │   ├── notify.py                      ← Fires on Notification — drives flash pattern
 │   ├── stop.py                        ← Fires on Stop — clears LEDs at session end
 │   ├── test_hooks.py                  ← Hook test runner (no hardware needed)
 │   └── requirements.txt               ← pip dependency: pyserial
 ├── hardware/
-│   ├── HW.md                          ← Hardware design notes
-│   ├── PCB/                           ← KiCad PCB project files
 │   └── wiring.md                      ← GPIO pin assignments and wiring diagrams
 └── docs/
     ├── Architecture.md                ← This file
@@ -122,8 +119,7 @@ See `hardware/wiring.md` for full pin assignments.
     ├── ROADMAP.md                     ← Planned features by phase
     ├── index.html                     ← Project landing page
     ├── styles.css                     ← Landing page styles
-    ├── Gavel.key                      ← Keynote presentation
-    └── images/                        ← Icon files (SVG source + PNG exports)
+    └── images/                        ← Icon files + PCB photo (SVG source + PNG exports)
 ```
 
 ---

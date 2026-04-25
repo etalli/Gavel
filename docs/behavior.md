@@ -318,6 +318,7 @@ Claude Code event
 hooks/pre_tool.py (or notify.py, post_tool.py, stop.py)
       │   reads JSON from stdin (Claude Code passes event data)
       │   classifies notification level (notify.py only)
+      │   checks context_window_utilization (post_tool.py only — warns if ≥ 90%)
       ▼
 hooks/pico.py  →  send_to_pico(event, payload)
       │

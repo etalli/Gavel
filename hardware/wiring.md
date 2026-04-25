@@ -41,7 +41,7 @@ GPIO pin ──[220Ω]──[LED anode → cathode]── GND
 
 ## LEDs — Waveshare RP2040 Zero
 
-The RP2040 Zero drives both the built-in RGB NeoPixel (GP16) and three discrete LEDs (GP10/GP11/GP12) simultaneously.
+The RP2040 Zero drives both the built-in RGB NeoPixel (GP16) and three discrete LEDs (GP2/GP3/GP4) simultaneously.
 
 ### Discrete LEDs
 
@@ -72,7 +72,7 @@ Color coding:
 | Notification (info) | White pulse |
 | Notification (warn) | Orange flash |
 | Notification (error) | Red rapid flash |
-| Breathing (idle, optional) | Red fade in/out |
+| Breathing (idle, optional) | Blue fade in/out |
 
 ## Reset Button
 

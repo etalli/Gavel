@@ -49,6 +49,7 @@ The microcontroller runs two independent roles over a single USB cable:
 | `Notification` (info) | Single slow flash |
 | `Notification` (warn) | Three medium flashes |
 | `Notification` (error) | Five fast flashes (red only) |
+| `PostToolUse` (context ≥ 90%) | Three medium flashes, then off |
 
 ---
 
