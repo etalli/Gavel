@@ -187,13 +187,11 @@ def send_key(keycode):
     time.sleep(0.05)
 
 def press_button(keycode, color, led_idx):
-    global decision_off_at
     all_leds_off()
     send_key(keycode)
     if USE_NEOPIXEL:
         np[0] = color
     set_led(led_idx, BRIGHT)
-    decision_off_at = time.monotonic_ns() // 1_000_000 + DECISION_HOLD_MS
 
 # ── Startup flash ─────────────────────────────────────────────
 flash_all(times=2, on_ms=100, off_ms=100)
@@ -218,6 +216,7 @@ while True:
     if (now - last_press) > DEBOUNCE_MS:
         if not btn_allow_once.value:
             press_button(*BUTTONS[0][1:])
+            decision_off_at = now + DECISION_HOLD_MS
             state = STATE_IDLE
             last_press = now
 
@@ -238,6 +237,7 @@ while True:
                 for btn, keycode, color, led_idx in BUTTONS[1:]:
                     if not btn.value:
                         press_button(keycode, color, led_idx)
+                        decision_off_at = now + DECISION_HOLD_MS
                         state = STATE_IDLE
                         break
             last_press = now
