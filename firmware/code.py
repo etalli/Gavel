@@ -76,11 +76,11 @@ btn_allow_once   = make_button(board.GP14)
 btn_always_allow = make_button(board.GP15)
 btn_reject       = make_button(board.GP26)
 
-# Each entry: (button_object, keycode, NeoPixel_color, discrete_LED_index)
+# Each entry: (button_object, keycode, NeoPixel_color, discrete_LED_index, name)
 BUTTONS = [
-    (btn_allow_once,   Keycode.ONE,   (0, 255, 0), 0),
-    (btn_always_allow, Keycode.TWO,   (0, 0, 255), 1),
-    (btn_reject,       Keycode.THREE, (255, 0, 0), 2),
+    (btn_allow_once,   Keycode.ONE,   (0, 255, 0), 0, "allow_once"),
+    (btn_always_allow, Keycode.TWO,   (0, 0, 255), 1, "always_allow"),
+    (btn_reject,       Keycode.THREE, (255, 0, 0), 2, "reject"),
 ]
 
 # ── LED setup ─────────────────────────────────────────────────
@@ -208,12 +208,13 @@ def send_key(keycode):
     kbd.release_all()
     time.sleep(0.05)
 
-def press_button(keycode, color, led_idx):
+def press_button(keycode, color, led_idx, name="unknown"):
     all_leds_off()
     send_key(keycode)
     if USE_NEOPIXEL:
         np[0] = color
     set_led(led_idx, BRIGHT)
+    serial.write((json.dumps({"event": "button", "button": name}) + "\n").encode())
 
 # ── Startup flash ─────────────────────────────────────────────
 flash_all(times=2, on_ms=100, off_ms=100)
@@ -265,9 +266,9 @@ while True:
                         all_leds_off()
                     last_combo = now
             else:
-                for btn, keycode, color, led_idx in BUTTONS[1:]:
+                for btn, keycode, color, led_idx, name in BUTTONS[1:]:
                     if not btn.value:
-                        press_button(keycode, color, led_idx)
+                        press_button(keycode, color, led_idx, name)
                         decision_off_at = now + DECISION_HOLD_MS
                         state = STATE_IDLE
                         break
