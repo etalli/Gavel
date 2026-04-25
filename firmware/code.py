@@ -53,6 +53,9 @@ PERMISSION_TIMEOUT_MS = 5_000
 # How long to hold the pressed button's LED after a decision
 DECISION_HOLD_MS = 2_000
 
+# NeoPixel color for the thinking-toggle combo flash
+THINKING_COLOR = (128, 0, 128)  # purple
+
 # KITT / breathing mode — toggle with Button 2 + Button 3 simultaneously
 KITT_DEFAULT = False
 
@@ -219,29 +222,39 @@ while True:
         if all_released:
             waiting_release = False
     elif (now - last_press) > DEBOUNCE_MS:
-        if not btn_allow_once.value:
-            press_button(*BUTTONS[0][1:])
-            decision_off_at = now + DECISION_HOLD_MS
-            state = STATE_IDLE
-            last_press = now
-            waiting_release = True
-
-        elif not btn_always_allow.value or not btn_reject.value:
-            # Wait 40ms to see if both get pressed (combo window)
+        if not btn_allow_once.value or not btn_always_allow.value or not btn_reject.value:
+            # Wait 40ms to resolve combos before acting
             time.sleep(0.04)
+            b1 = not btn_allow_once.value
             b2 = not btn_always_allow.value
             b3 = not btn_reject.value
 
-            if b2 and b3:
-                # Combo: toggle KITT / breathing mode
+            if b1 and b2:
+                # Combo B1+B2: send Cmd+T (toggle extended thinking)
+                if (now - last_combo) > 500:
+                    all_leds_off()
+                    if USE_NEOPIXEL:
+                        np[0] = THINKING_COLOR
+                    for led in LEDS:
+                        led.duty_cycle = BRIGHT
+                    kbd.press(Keycode.COMMAND, Keycode.T)
+                    time.sleep(0.05)
+                    kbd.release_all()
+                    time.sleep(0.1)
+                    all_leds_off()
+                    last_combo = now
+            elif b2 and b3:
+                # Combo B2+B3: toggle KITT / breathing mode
                 if (now - last_combo) > 500:
                     kitt_enabled = not kitt_enabled
                     if not kitt_enabled:
                         all_leds_off()
                     last_combo = now
             else:
-                for btn, keycode, color, led_idx in BUTTONS[1:]:
-                    if not btn.value:
+                # Single button press
+                pressed = [b1, b2, b3]
+                for i, (_, keycode, color, led_idx) in enumerate(BUTTONS):
+                    if pressed[i]:
                         press_button(keycode, color, led_idx)
                         decision_off_at = now + DECISION_HOLD_MS
                         state = STATE_IDLE
