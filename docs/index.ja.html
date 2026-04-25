@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Gavel - Claude Code の物理コントローラー。専用ハードウェアボタンでツールの許可を判断します。">
+  <title>Gavel | Claude Code 物理コントローラー</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <img src="images/icon-512.png" alt="Gavel Icon" class="logo">
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1 class="title">Gavel</h1>
+        <p class="subtitle">Claude Code の物理コントローラー。</p>
+      </section>
+
+      <section class="content-section">
+        <h2>なぜ「Gavel（木槌）」？</h2>
+        <p>裁判官の木槌は判決を確定させます——そして、ここでは常に人間が判断を下す側です。
+          同じキーはどんなキーボードでも送れますが、専用のデバイスがあることで、
+          無意識にキーを叩く代わりに立ち止まって考えるようになります。反射ではなく、判断として。</p>
+      </section>
+
+      <div class="grid">
+        <div class="card content-section">
+          <h3>入力</h3>
+          <p>3 つの物理ボタンで Claude Code のパーミッションプロンプトに回答します（<code>1</code> 一回許可 / <code>2</code>
+            常に許可 / <code>3</code> 拒否）。キーボードを触る必要はありません。</p>
+        </div>
+        <div class="card content-section">
+          <h3>出力</h3>
+          <p>Claude Code のフックイベントに応じて LED が点灯し、Claude の動作をリアルタイムでフィードバックします。
+          </p>
+        </div>
+      </div>
+
+      <section class="content-section">
+        <h2>仕組み</h2>
+        <p>マイコンは 1 本の USB ケーブルで 2 つの独立した役割を担います：</p>
+        <ol>
+          <li><strong>USB HID キーボード</strong> — ボタンを押すと、対応するキーが端末に送信されます。Claude
+            Code はユーザーが直接タイプしたかのように受信します。Claude Code の特別な設定は不要です。</li>
+          <li><strong>シリアルリスナー</strong> — Claude Code フックが Mac 側の Python スクリプトを呼び出し、
+            マイコンの USB シリアルポートへ小さな JSON メッセージを送信して LED を制御します。</li>
+        </ol>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>フック</th>
+                <th>LED の反応</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>PreToolUse</code></td>
+                <td><span class="indicator indicator-on"></span>全 LED 点灯</td>
+              </tr>
+              <tr>
+                <td><code>PostToolUse</code></td>
+                <td><span class="indicator indicator-off"></span>全 LED 消灯</td>
+              </tr>
+              <tr>
+                <td><code>Notification</code> (info)</td>
+                <td><span class="indicator indicator-flash-slow"></span>ゆっくり 1 回点滅</td>
+              </tr>
+              <tr>
+                <td><code>Notification</code> (warn)</td>
+                <td><span class="indicator indicator-flash-med"></span>中程度で 3 回点滅</td>
+              </tr>
+              <tr>
+                <td><code>Notification</code> (error)</td>
+                <td><span class="indicator indicator-flash-fast"></span>速く 5 回点滅（赤のみ）</td>
+              </tr>
+              <tr>
+                <td><code>PostToolUse</code>（コンテキスト 90% 以上）</td>
+                <td><span class="indicator indicator-flash-med"></span>中程度で 3 回点滅、その後消灯</td>
+              </tr>
+              <tr>
+                <td>アイドル — Pico（KITT モード）</td>
+                <td>
+                  <span class="kitt-leds">
+                    <span class="kitt-dot" id="k0"></span>
+                    <span class="kitt-dot" id="k1"></span>
+                    <span class="kitt-dot" id="k2"></span>
+                  </span>
+                  ナイトライダー風スウィープ
+                </td>
+              </tr>
+              <tr>
+                <td>アイドル — RP2040 Zero（KITT モード）</td>
+                <td><span class="indicator indicator-breath"></span>ブルー呼吸フェード</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>セットアップ</h2>
+        <p>セットアップは簡単です：</p>
+        <ol>
+          <li>ボードに <a href="https://circuitpython.org" target="_blank" rel="noopener noreferrer">CircuitPython</a> をインストール</li>
+          <li><code>firmware/boot.py</code> と <code>firmware/code.py</code> を <code>CIRCUITPY</code> ドライブにコピー</li>
+          <li><code>adafruit_hid/</code>（全ボード）と <code>neopixel.mpy</code>（RP2040 Zero のみ）を <code>CIRCUITPY/lib/</code> にコピー</li>
+          <li><code>boot.py</code> を有効にするため、ボードの電源を入れ直す（USB を抜き差し）</li>
+          <li>Mac 側の依存関係をインストール：<code>pip3 install pyserial</code></li>
+          <li><a href="https://github.com/etalli/Gavel/blob/main/hardware/wiring.md" target="_blank" rel="noopener noreferrer">ハードウェア配線ガイド</a>に従ってボタンと LED を配線</li>
+          <li><code>./install.sh --deploy</code> を実行して <code>~/.claude/settings.json</code> にフックを登録</li>
+        </ol>
+      </section>
+    </main>
+
+    <footer>
+      <p>人間参加型 AI インタラクションのために設計されました。</p>
+      <p style="margin-top: 0.75rem;">
+        <a href="https://github.com/etalli/Gavel" target="_blank" rel="noopener noreferrer">GitHub で見る</a>
+        &nbsp;·&nbsp;
+        <a href="https://github.com/etalli/Gavel/releases" target="_blank" rel="noopener noreferrer">リリース</a>
+        &nbsp;·&nbsp;
+        <a href="index.html">English</a>
+      </p>
+      <p style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.7;">&copy; 2026 Gavel Project. All rights reserved.
+      </p>
+    </footer>
+  </div>
+  <script>
+    const dots = [document.getElementById('k0'), document.getElementById('k1'), document.getElementById('k2')];
+    const seq = [0, 1, 2, 1];
+    let step = 0, prev = -1;
+    setInterval(() => {
+      dots.forEach(d => { d.className = 'kitt-dot'; });
+      const curr = seq[step];
+      if (prev >= 0 && prev !== curr) dots[prev].classList.add('kitt-dim');
+      dots[curr].classList.add('kitt-bright');
+      prev = curr;
+      step = (step + 1) % seq.length;
+    }, 1000);
+  </script>
+</body>
+
+</html>
