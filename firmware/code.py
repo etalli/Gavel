@@ -44,8 +44,8 @@ BREATH_UPDATE = 100    # ms between brightness updates
 # KITT animation (Pico only)
 KNIGHT_STEP_MS = 1000  # ms per LED step
 
-# Button debounce
-DEBOUNCE_MS = 50
+# Button debounce — long enough to cover key send time (~100ms) plus natural hold duration
+DEBOUNCE_MS = 300
 
 # Permission timeout — return to idle if no response within this time
 PERMISSION_TIMEOUT_MS = 5_000
