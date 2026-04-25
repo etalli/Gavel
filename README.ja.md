@@ -4,7 +4,7 @@
 
 <img src="docs/images/icon-128.png" alt="Gavel icon" align="right"/>
 
-[Claude Code](https://claude.ai/code) の物理コントローラー。
+[Claude Code](https://claude.ai/code) の物理コントローラー。 · [ランディングページ](https://etalli.github.io/Gavel/)
 
 **なぜ「Gavel（木槌）」？** 裁判官の木槌は判決を確定させます——そして、ここでは常に人間が判断を下す側です。同じキーはどんなキーボードでも送れますが、専用のデバイスがあることで、無意識にキーを叩く代わりに立ち止まって考えるようになります。反射ではなく、判断として。
 

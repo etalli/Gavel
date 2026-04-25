@@ -4,7 +4,7 @@
 
 <img src="docs/images/icon-128.png" alt="Gavel icon" align="right"/>
 
-A physical controller for [Claude Code](https://claude.ai/code).
+A physical controller for [Claude Code](https://claude.ai/code). · [Landing page](https://etalli.github.io/Gavel/)
 
 **Why "Gavel"?** A judge's gavel makes decisions final — and here, the human is always the judge. Any keyboard could send the same keys, but a dedicated device makes you stop and think instead of hitting a key on autopilot. A ruling, not a reflex.
 
