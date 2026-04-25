@@ -44,8 +44,8 @@ BREATH_UPDATE = 100    # ms between brightness updates
 # KITT animation (Pico only)
 KNIGHT_STEP_MS = 1000  # ms per LED step
 
-# Button debounce — long enough to cover key send time (~100ms) plus natural hold duration
-DEBOUNCE_MS = 300
+# Button debounce — guards against electrical bounce on the falling edge only
+DEBOUNCE_MS = 50
 
 # Permission timeout — return to idle if no response within this time
 PERMISSION_TIMEOUT_MS = 5_000
@@ -208,17 +208,23 @@ last_press       = 0
 last_combo       = 0
 permission_time  = 0  # timestamp when STATE_PERMISSION was entered
 decision_off_at  = 0  # ms timestamp to clear the decision LED; 0 = inactive
+waiting_release  = False  # True = block until all buttons are physically released
 
 while True:
     now = time.monotonic_ns() // 1_000_000  # ms
 
     # ── Button input ──────────────────────────────────────────
-    if (now - last_press) > DEBOUNCE_MS:
+    all_released = btn_allow_once.value and btn_always_allow.value and btn_reject.value
+    if waiting_release:
+        if all_released:
+            waiting_release = False
+    elif (now - last_press) > DEBOUNCE_MS:
         if not btn_allow_once.value:
             press_button(*BUTTONS[0][1:])
             decision_off_at = now + DECISION_HOLD_MS
             state = STATE_IDLE
             last_press = now
+            waiting_release = True
 
         elif not btn_always_allow.value or not btn_reject.value:
             # Wait 40ms to see if both get pressed (combo window)
@@ -241,6 +247,7 @@ while True:
                         state = STATE_IDLE
                         break
             last_press = now
+            waiting_release = True
 
     # ── Permission timeout ────────────────────────────────────
     if state == STATE_PERMISSION and (now - permission_time) > PERMISSION_TIMEOUT_MS:
