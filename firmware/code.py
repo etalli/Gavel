@@ -56,6 +56,9 @@ DECISION_HOLD_MS = 2_000
 # KITT / breathing mode — toggle with Button 2 + Button 3 simultaneously
 KITT_DEFAULT = False
 
+# Permission blink interval for network-category tools (ms)
+NETWORK_BLINK_MS = 500
+
 # ── USB Keyboard ──────────────────────────────────────────────
 kbd = Keyboard(usb_hid.devices)
 
@@ -115,11 +118,24 @@ def all_leds_off():
 def set_led(index, duty):
     LEDS[index].duty_cycle = duty
 
-def set_waiting_leds():
-    if USE_NEOPIXEL:
-        np[0] = (255, 255, 255)
-    for led in LEDS:
-        led.duty_cycle = BRIGHT
+def set_permission_leds(category):
+    """Set LEDs based on tool risk category.
+    destructive → all bright (high alert)
+    readonly    → center LED dim (low stakes)
+    network     → handled by blink loop in main
+    """
+    all_leds_off()
+    if category == "readonly":
+        if USE_NEOPIXEL:
+            np[0] = (0, 180, 0)   # green
+        set_led(1, DIM)
+    elif category == "network":
+        pass  # blink loop takes over immediately
+    else:  # destructive (default)
+        if USE_NEOPIXEL:
+            np[0] = (255, 255, 255)
+        for led in LEDS:
+            led.duty_cycle = BRIGHT
 
 def flash_all(times=3, on_ms=80, off_ms=80):
     for _ in range(times):
@@ -209,6 +225,9 @@ last_combo       = 0
 permission_time  = 0  # timestamp when STATE_PERMISSION was entered
 decision_off_at  = 0  # ms timestamp to clear the decision LED; 0 = inactive
 waiting_release  = False  # True = block until all buttons are physically released
+perm_category    = "destructive"  # category of the current permission request
+perm_blink_on    = False          # current blink state for network category
+perm_blink_next  = 0              # next blink toggle timestamp (ms)
 
 while True:
     now = time.monotonic_ns() // 1_000_000  # ms
@@ -259,6 +278,18 @@ while True:
         all_leds_off()
         decision_off_at = 0
 
+    # ── Network permission blink (non-blocking) ───────────────
+    if state == STATE_PERMISSION and perm_category == "network" and now >= perm_blink_next:
+        perm_blink_on = not perm_blink_on
+        if perm_blink_on:
+            if USE_NEOPIXEL:
+                np[0] = (255, 165, 0)  # orange
+            for led in LEDS:
+                led.duty_cycle = BRIGHT
+        else:
+            all_leds_off()
+        perm_blink_next = now + NETWORK_BLINK_MS
+
     # ── NeoPixel breathing (sine wave, non-blocking) ──────────
     if USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and not decision_off_at and now >= breath_next:
         t = time.monotonic()
@@ -290,7 +321,10 @@ while True:
                 state = STATE_PERMISSION
                 permission_time = now
                 decision_off_at = 0
-                set_waiting_leds()
+                perm_category   = msg.get("category", "destructive")
+                perm_blink_on   = False
+                perm_blink_next = now
+                set_permission_leds(perm_category)
 
             elif msg_type == "notification":
                 flash_for_level(level)
