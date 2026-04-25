@@ -120,20 +120,26 @@ def set_led(index, duty):
 
 def set_permission_leds(category):
     """Set LEDs based on tool risk category.
-    destructive → all bright (high alert)
-    readonly    → center LED dim (low stakes)
+    destructive → all bright red  (high alert)
+    write       → two LEDs dim    (medium risk)
+    readonly    → one LED dim     (low stakes)
     network     → handled by blink loop in main
     """
     all_leds_off()
     if category == "readonly":
         if USE_NEOPIXEL:
-            np[0] = (0, 180, 0)   # green
+            np[0] = (0, 0, 255)   # blue
+        set_led(1, DIM)
+    elif category == "write":
+        if USE_NEOPIXEL:
+            np[0] = (255, 200, 0)  # yellow
+        set_led(0, DIM)
         set_led(1, DIM)
     elif category == "network":
         pass  # blink loop takes over immediately
     else:  # destructive (default)
         if USE_NEOPIXEL:
-            np[0] = (255, 255, 255)
+            np[0] = (255, 0, 0)   # red
         for led in LEDS:
             led.duty_cycle = BRIGHT
 

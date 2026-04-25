@@ -11,12 +11,15 @@ sys.path.insert(0, os.path.dirname(__file__))
 from pico import send_to_pico
 
 READONLY_TOOLS = {"Read", "Glob", "Grep", "LS"}
+WRITE_TOOLS    = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 NETWORK_TOOLS  = {"WebFetch", "WebSearch", "Agent"}
 
 
 def classify(tool_name):
     if tool_name in READONLY_TOOLS:
         return "readonly"
+    if tool_name in WRITE_TOOLS:
+        return "write"
     if tool_name in NETWORK_TOOLS:
         return "network"
     return "destructive"
