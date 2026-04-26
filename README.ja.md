@@ -23,12 +23,12 @@ Happy coding!
 
 ## ハードウェア
 
-2 つのボードに対応：
+PCB は内蔵 RGB NeoPixel を持つ **Waveshare RP2040 Zero** 向けに設計されています。
 
-| ボード | LED 出力 |
-|-------|---------|
-| Raspberry Pi Pico | 3× 個別 LED (GP2/GP3/GP4) |
-| Waveshare RP2040 Zero | 内蔵 RGB NeoPixel (GP16) |
+| ボード | LED 出力 | ステータス |
+|-------|---------|---------|
+| Waveshare RP2040 Zero | 内蔵 RGB NeoPixel (GP16) | メイン（PCB 対応） |
+| Raspberry Pi Pico | 3× 個別 LED (GP2/GP3/GP4) | レガシー / DIY 配線のみ |
 
 ボードの種類は自動検出されます——手動設定は不要です。
 
