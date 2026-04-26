@@ -213,11 +213,7 @@ def press_button(keycode, color, led_idx, name="unknown"):
     if USE_NEOPIXEL:
         np[0] = color
     set_led(led_idx, BRIGHT)
-    evt = json.dumps({"event": "button", "button": name}) + "\n"
-    if serial.connected:
-        serial.write(evt.encode())
-    else:
-        button_event_queue.append(evt)
+    button_event_queue.append(json.dumps({"event": "button", "button": name}) + "\n")
 
 # ── Startup flash ─────────────────────────────────────────────
 flash_all(times=2, on_ms=100, off_ms=100)
