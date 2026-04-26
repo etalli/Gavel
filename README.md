@@ -21,12 +21,14 @@ Happy coding!
 
 ## Hardware
 
-The PCB is designed for the **Waveshare RP2040 Zero** with its built-in RGB NeoPixel.
+The PCB is designed for the **Waveshare RP2040 Zero**.
 
 | Board | LED output | Status |
 |-------|-----------|--------|
-| Waveshare RP2040 Zero | Built-in RGB NeoPixel (GP16) | Primary (PCB supported) |
+| Waveshare RP2040 Zero | RGB NeoPixel (GP16) + 3× button LEDs (GP2/GP3/GP4) | Primary (PCB supported) |
 | Raspberry Pi Pico | 3× discrete LEDs (GP2/GP3/GP4) | Legacy / DIY wiring only |
+
+The NeoPixel shows the tool risk category color. The 3 button LEDs (one per switch) light up to confirm which button was pressed.
 
 Board type is auto-detected — no manual configuration needed.
 
