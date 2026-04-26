@@ -205,13 +205,19 @@ def send_key(keycode):
     kbd.release_all()
     time.sleep(0.05)
 
+button_event_queue = []  # buffered when port is closed; flushed on next connection
+
 def press_button(keycode, color, led_idx, name="unknown"):
     all_leds_off()
     send_key(keycode)
     if USE_NEOPIXEL:
         np[0] = color
     set_led(led_idx, BRIGHT)
-    serial.write((json.dumps({"event": "button", "button": name}) + "\n").encode())
+    evt = json.dumps({"event": "button", "button": name}) + "\n"
+    if serial.connected:
+        serial.write(evt.encode())
+    else:
+        button_event_queue.append(evt)
 
 # ── Startup flash ─────────────────────────────────────────────
 flash_all(times=2, on_ms=100, off_ms=100)
@@ -305,6 +311,12 @@ while True:
         knight_prev = curr
         knight_step = (knight_step + 1) % len(KNIGHT_SEQUENCE)
         knight_next = now + KNIGHT_STEP_MS
+
+    # ── Flush buffered button events when port is open ────────
+    if serial.connected and button_event_queue:
+        for evt in button_event_queue:
+            serial.write(evt.encode())
+        button_event_queue.clear()
 
     # ── Incoming serial from Mac ──────────────────────────────
     line = read_serial_line()
