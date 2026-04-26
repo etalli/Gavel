@@ -6,5 +6,11 @@ CLAUDE.md
 hooks/__pycache__/*
 hooks/*.log
 docs/Gavel.key
-hardware/PCB/
+PCB/*backups
+PCB/*.json
+PCB/fp-lib-table
+PCB/sym-lib-table
+PCB/production/backups
+PCB/.history/
 Release.txt
+/hardware/PCB/.history
