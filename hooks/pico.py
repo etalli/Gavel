@@ -4,6 +4,7 @@ Handles logging and serial communication with the Pico.
 """
 import json
 import os
+import time
 import datetime
 from typing import Optional
 
@@ -47,7 +48,8 @@ def send_to_pico(event: str, payload: dict) -> None:
         import serial
         with serial.Serial(port, timeout=1) as ser:  # baud rate is irrelevant over USB CDC
             ser.write((json.dumps(payload) + "\n").encode())
-            # Drain any button events the Pico buffered since the last hook call
+            # Wait for device to process the message and flush any buffered button events
+            time.sleep(0.2)
             if ser.in_waiting:
                 _log_button_events(ser.read(ser.in_waiting).decode("utf-8", errors="replace"))
     except Exception as e:

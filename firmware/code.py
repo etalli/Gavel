@@ -312,15 +312,14 @@ while True:
         knight_step = (knight_step + 1) % len(KNIGHT_SEQUENCE)
         knight_next = now + KNIGHT_STEP_MS
 
-    # ── Flush buffered button events when port is open ────────
-    if serial.connected and button_event_queue:
-        for evt in button_event_queue:
-            serial.write(evt.encode())
-        button_event_queue.clear()
-
     # ── Incoming serial from Mac ──────────────────────────────
     line = read_serial_line()
     if line:
+        # Flush buffered button events first — port is confirmed open
+        if button_event_queue:
+            for evt in button_event_queue:
+                serial.write(evt.encode())
+            button_event_queue.clear()
         print("received:", line)
         try:
             msg = json.loads(line)
