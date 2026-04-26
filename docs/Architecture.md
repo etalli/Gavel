@@ -48,10 +48,14 @@ over the device's serial port:
 
 | Hook event   | Script         | Device response              |
 |--------------|----------------|------------------------------|
-| PreToolUse   | pre_tool.py    | Solid white (waiting state)  |
+| PreToolUse   | pre_tool.py    | Color by category: blue (readonly), yellow (write), orange blink (network), red (destructive) |
 | PostToolUse  | post_tool.py   | Warn flash if context ≥ 90%, then all LEDs off |
 | Notification | notify.py      | Flash pattern based on level |
 | Stop         | stop.py        | All LEDs off (session ended) |
+
+Permission LEDs stay lit until a button is pressed — there is no timeout.
+
+Each button press is appended to `~/.claude/gavel/decisions.jsonl` with a timestamp, enabling decision history and usage stats.
 
 Notification flash patterns:
 
@@ -72,7 +76,8 @@ Notification flash patterns:
 | Microcontroller | Waveshare RP2040 Zero       | RP2040, CircuitPython firmware         |
 | Buttons (×3)    | 6×6mm tactile switch        | Internal pull-up, active low, GP14/15/26 |
 | Reset button    | 6×6mm tactile switch        | RESET pin to GND, no resistor          |
-| LED output      | Built-in RGB NeoPixel       | GP16 (WS2812), color-coded per event   |
+| LED output      | Built-in RGB NeoPixel       | GP16 (WS2812), color-coded by tool risk category |
+| Button LEDs (×3)| Discrete LEDs               | GP2/GP3/GP4, one per button, confirm button press |
 | Connection      | USB-C cable                 | Powers the board + HID + serial        |
 
 ### Also Supported (Auto-Detected)
@@ -104,12 +109,13 @@ See `hardware/wiring.md` for full pin assignments.
 │   └── requirements.txt               ← CircuitPython libs (adafruit_hid, neopixel)
 ├── hooks/
 │   ├── find_device.py                 ← Locates the device's data serial port on macOS
-│   ├── pico.py                        ← Shared serial send helper + logging
-│   ├── pre_tool.py                    ← Fires on PreToolUse — signals waiting state
+│   ├── pico.py                        ← Shared serial send helper; reads button events → decisions.jsonl
+│   ├── pre_tool.py                    ← Fires on PreToolUse — color by tool risk category
 │   ├── post_tool.py                   ← Fires on PostToolUse — warn if context ≥ 90%, then idle
 │   ├── notify.py                      ← Fires on Notification — drives flash pattern
 │   ├── stop.py                        ← Fires on Stop — clears LEDs at session end
 │   ├── test_hooks.py                  ← Hook test runner (no hardware needed)
+│   ├── test_leds.py                   ← Sends each LED category to device for visual verification
 │   └── requirements.txt               ← pip dependency: pyserial
 ├── hardware/
 │   └── wiring.md                      ← GPIO pin assignments and wiring diagrams
