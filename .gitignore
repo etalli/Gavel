@@ -14,3 +14,7 @@ PCB/production/backups
 PCB/.history/
 Release.txt
 /hardware/PCB/.history
+hardware/PCB/sym-lib-table
+hardware/PCB/fp-lib-table
+hardware/PCB/fabrication-toolkit-options.json
+*.bak
