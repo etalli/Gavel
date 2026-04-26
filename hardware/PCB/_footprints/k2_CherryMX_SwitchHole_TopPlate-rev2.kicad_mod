@@ -1,0 +1,150 @@
+(footprint "k2_CherryMX_SwitchHole_TopPlate-rev2"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(property "Reference" "SW101"
+		(at 7.1 8.2 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "aa698375-009b-4f5f-9182-0acb302c367a")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "SW_Push"
+		(at -4.8 8.3 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "a7082046-1519-4db1-b2a2-ce28d70d6f99")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "8637bef3-2029-48ca-a360-674cd6fceed1")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" "Push button switch, generic, two pins"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "5e3902ac-dd70-4697-ad5b-4591e6be7857")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start -9.525 -9.525)
+		(end 9.525 -9.525)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "Dwgs.User")
+		(uuid "8c77263d-5cb3-44cc-86d6-e50d8d265a9b")
+	)
+	(fp_line
+		(start -9.525 9.525)
+		(end -9.525 -9.525)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "Dwgs.User")
+		(uuid "2652d14f-fa82-4318-9b7e-ec49b5781fdf")
+	)
+	(fp_line
+		(start 9.525 -9.525)
+		(end 9.525 9.525)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "Dwgs.User")
+		(uuid "7a5c95c9-c3b8-4789-ba92-4a6e6fcdee8f")
+	)
+	(fp_line
+		(start 9.525 9.525)
+		(end -9.525 9.525)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "Dwgs.User")
+		(uuid "336091ff-e551-4947-9708-0b57968edb05")
+	)
+	(fp_line
+		(start -7 -7)
+		(end -7 7)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "Edge.Cuts")
+		(uuid "bfaa5b6c-a390-4b1c-b7c8-5c18d4680643")
+	)
+	(fp_line
+		(start -7 -7)
+		(end 7 -7)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "Edge.Cuts")
+		(uuid "04030ed1-ea17-4934-b729-fcaae75d3b50")
+	)
+	(fp_line
+		(start -7 7)
+		(end 7 7)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "Edge.Cuts")
+		(uuid "eb2462ff-40ec-4922-b030-9831d9a293d5")
+	)
+	(fp_line
+		(start 7 -7)
+		(end 7 7)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(layer "Edge.Cuts")
+		(uuid "dc980177-b1a2-45cc-945d-2c6ebd91e1f4")
+	)
+	(fp_text user "SwitchHole-rev1"
+		(at -3.6 -7.79 0)
+		(unlocked yes)
+		(layer "Cmts.User")
+		(uuid "cbeb0dd2-10dd-461d-8496-728c89b08461")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(embedded_fonts no)
+)
