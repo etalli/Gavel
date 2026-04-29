@@ -15,7 +15,7 @@ Happy coding!
 
 - **Input** — Three physical buttons answer Claude Code's permission prompts (`1` Allow Once / `2` Always Allow / `3` Reject) without touching the keyboard.
 - **Output** — LEDs light up in response to Claude Code hook events, giving real-time feedback on what Claude is doing. Color and pattern vary by tool risk category (read / write / network / destructive).
-- **Log** — Every button press is appended to `~/.claude/gavel/decisions.jsonl` for decision history.
+- **Log** — Every button press is appended to `~/.claude/gavel/decisions.jsonl` for decision history. Run `python3 hooks/stats.py` to see a summary.
 
 ---
 
