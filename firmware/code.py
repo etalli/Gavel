@@ -15,6 +15,9 @@ Regular LED mode (Raspberry Pi Pico):
 NeoPixel mode (Waveshare RP2040 Zero):
   GP16 → RGB NeoPixel — color-coded per event
 
+Vibration motor (Waveshare RP2040 Zero):
+  GP5 → motor driver IN — active high
+
 Serial: USB serial (/dev/tty.usbmodem*) from Mac hook scripts
   Incoming JSON: {"type": "notification"|"permission"|"idle", "level": "info"|"warn"|"error"}
 """
@@ -61,6 +64,18 @@ kbd = Keyboard(usb_hid.devices)
 
 # ── USB Serial data port (separate from REPL console) ────────
 serial = usb_cdc.data
+
+# ── Vibration motor (active high, GP5) ───────────────────────
+motor = digitalio.DigitalInOut(board.GP5)
+motor.direction = digitalio.Direction.OUTPUT
+motor.value = False
+
+def buzz(times=1, on_ms=60, off_ms=60):
+    for _ in range(times):
+        motor.value = True
+        time.sleep(on_ms / 1000)
+        motor.value = False
+        time.sleep(off_ms / 1000)
 
 # ── Buttons (active low via internal pull-up) ─────────────────
 def make_button(pin):
@@ -157,6 +172,7 @@ def flash_all(times=3, on_ms=80, off_ms=80):
 def flash_for_level(level):
     all_leds_off()
     if level == "error":
+        buzz(times=3, on_ms=60, off_ms=60)
         for _ in range(5):
             if USE_NEOPIXEL:
                 np[0] = (255, 0, 0)
@@ -209,6 +225,7 @@ button_event_queue = []  # buffered when port is closed; flushed on next connect
 
 def press_button(keycode, color, led_idx, name="unknown"):
     all_leds_off()
+    buzz(times=1, on_ms=60)
     send_key(keycode)
     if USE_NEOPIXEL:
         np[0] = color
@@ -328,6 +345,7 @@ while True:
                 perm_category   = msg.get("category", "destructive")
                 perm_blink_on   = False
                 perm_blink_next = now
+                buzz(times=2, on_ms=60, off_ms=60)
                 set_permission_leds(perm_category)
 
             elif msg_type == "notification":
