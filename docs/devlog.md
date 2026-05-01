@@ -14,7 +14,7 @@
 >
 > The KiCad board's saved plot configuration now targets only `Edge.Cuts` and a non-Gerber output format (`outputformat` changed from `1` → `5`). Regenerating fabrication outputs from the committed design will produce only an SVG of the board outline, losing the full copper/mask/silkscreen Gerber set. This is a workflow-breaking regression for the hardware release process.
 
-**Action:** Opened [issue #36](https://github.com/etalli/Gavel/issues/36) — restore plot settings before next fabrication run.
+**Action:** Opened [issue #36](https://github.com/etalli/Gavel/issues/36) — later confirmed false alarm and closed. Edge.Cuts SVG output is intentional: it is the laser-cut design file for the top plate acrylic. Plot config is correct.
 
 ---
 
