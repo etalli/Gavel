@@ -31,6 +31,7 @@ import time
 import usb_cdc
 import usb_hid
 from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from adafruit_hid.keycode import Keycode
 
 # ── Config ────────────────────────────────────────────────────
@@ -76,8 +77,19 @@ SERVO_INFO  =  45
 SERVO_WARN  =  90
 SERVO_ERROR = 135
 
+# Long press — hold duration and macro strings (one per button)
+LONG_PRESS_MS      = 800
+MACRO_ALLOW_ONCE   = "SGTM"
+MACRO_ALWAYS_ALLOW = "SGTM"
+MACRO_REJECT       = "SGTM"
+MACROS = [MACRO_ALLOW_ONCE, MACRO_ALWAYS_ALLOW, MACRO_REJECT]
+
 # ── USB Keyboard ──────────────────────────────────────────────
-kbd = Keyboard(usb_hid.devices)
+kbd    = Keyboard(usb_hid.devices)
+layout = KeyboardLayoutUS(kbd)
+
+def type_string(text):
+    layout.write(text)
 
 # ── USB Serial data port (separate from REPL console) ────────
 serial = usb_cdc.data
@@ -271,8 +283,10 @@ kitt_enabled = KITT_DEFAULT  # runtime toggle; default set in config block above
 # ── Main loop ─────────────────────────────────────────────────
 last_press       = 0
 last_combo       = 0
-decision_off_at  = 0  # ms timestamp to clear the decision LED; 0 = inactive
+decision_off_at  = 0     # ms timestamp to clear the decision LED; 0 = inactive
 waiting_release  = False  # True = block until all buttons are physically released
+btn_down_idx     = -1    # BUTTONS index of held button; -1 = none pending
+btn_down_at      = 0     # ms when the current button first went down
 perm_category    = "destructive"  # category of the current permission request
 perm_blink_on    = False          # current blink state for network category
 perm_blink_next  = 0              # next blink toggle timestamp (ms)
@@ -285,13 +299,27 @@ while True:
     if waiting_release:
         if all_released:
             waiting_release = False
-    elif (now - last_press) > DEBOUNCE_MS:
-        if not btn_allow_once.value:
-            press_button(*BUTTONS[0][1:])
+            btn_down_idx = -1
+            btn_down_at  = 0
+
+    elif btn_down_idx >= 0:
+        # Button held — resolve as long or short press
+        if BUTTONS[btn_down_idx][0].value:  # released → short press
+            press_button(*BUTTONS[btn_down_idx][1:])
             decision_off_at = now + DECISION_HOLD_MS
             state = STATE_IDLE
             last_press = now
             waiting_release = True
+        elif (now - btn_down_at) >= LONG_PRESS_MS:  # held long enough → macro
+            type_string(MACROS[btn_down_idx])
+            last_press = now
+            waiting_release = True
+
+    elif (now - last_press) > DEBOUNCE_MS:
+        if not btn_allow_once.value:
+            btn_down_idx = 0
+            btn_down_at  = now
+            last_press   = now
 
         elif not btn_always_allow.value or not btn_reject.value:
             # Wait 40ms to see if both get pressed (combo window)
@@ -300,21 +328,22 @@ while True:
             b3 = not btn_reject.value
 
             if b2 and b3:
-                # Combo: toggle KITT / breathing mode
+                # Combo: toggle KITT / breathing mode (immediate, no long press)
                 if (now - last_combo) > 500:
                     kitt_enabled = not kitt_enabled
                     if not kitt_enabled:
                         all_leds_off()
                     last_combo = now
-            else:
-                for btn, keycode, color, led_idx, name in BUTTONS[1:]:
-                    if not btn.value:
-                        press_button(keycode, color, led_idx, name)
-                        decision_off_at = now + DECISION_HOLD_MS
-                        state = STATE_IDLE
-                        break
-            last_press = now
-            waiting_release = True
+                last_press = now
+                waiting_release = True
+            elif b2:
+                btn_down_idx = 1
+                btn_down_at  = now
+                last_press   = now
+            elif b3:
+                btn_down_idx = 2
+                btn_down_at  = now
+                last_press   = now
 
     # ── Decision LED hold ─────────────────────────────────────
     if decision_off_at and now >= decision_off_at:
