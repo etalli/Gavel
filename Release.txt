@@ -33,6 +33,11 @@ Claude Code の物理コントローラーに LED カラーを追加しました
 #ClaudeCode #Gavel
 
 
+Gavel v1.0.7
+v3 PCB support — button and LED pin reassignment (GP2/3/4 → buttons, GP10/11/12 → LEDs).
+Confirmed working with servo (GP6) on the new board.
+
+
 Gavel v1.0.6
 Claude Code の物理コントローラ Gavel にサーボを追加しました。
 通知の重要度に応じて角度を保持します。
