@@ -80,8 +80,8 @@ SERVO_ERROR = 135
 # Long press — hold duration and macro strings (one per button)
 LONG_PRESS_MS      = 800
 MACRO_ALLOW_ONCE   = "SGTM"
-MACRO_ALWAYS_ALLOW = "SGTM"
-MACRO_REJECT       = "SGTM"
+MACRO_ALWAYS_ALLOW = "HELLO WORLD"
+MACRO_REJECT       = "NOPE"
 MACROS = [MACRO_ALLOW_ONCE, MACRO_ALWAYS_ALLOW, MACRO_REJECT]
 
 # ── USB Keyboard ──────────────────────────────────────────────
