@@ -1,14 +1,12 @@
 """
 Gavel – Claude Code physical controller
-Raspberry Pi Pico / Waveshare RP2040 Zero firmware (CircuitPython)
+Waveshare RP2040-Zero, Raspberry Pi Pico firmware (CircuitPython)
 
 Buttons:
-  v2: GP14 → Allow Once / GP15 → Always Allow / GP26 → Reject
-  v3: GP2  → Allow Once / GP3  → Always Allow / GP4  → Reject
+  GP2  → Allow Once / GP3  → Always Allow / GP4  → Reject
 
 LEDs:
-  v2: GP2  → Allow Once (green) / GP3 → Always Allow (green) / GP4 → Reject (red)
-  v3: GP10 → Allow Once (green) / GP11 → Always Allow (green) / GP12 → Reject (red)
+  GP10 → Allow Once (green) / GP11 → Always Allow (green) / GP12 → Reject (red)
 
 NeoPixel (Waveshare RP2040 Zero):
   GP16 → RGB NeoPixel — color-coded per event
@@ -103,15 +101,10 @@ def make_button(pin):
     b.pull = digitalio.Pull.UP
     return b
 
-# v2 boards (Waveshare RP2040 Zero))
-#btn_allow_once   = make_button(board.GP14)
-#btn_always_allow = make_button(board.GP15)
-#btn_reject       = make_button(board.GP26)
-# v3 boards
+# boards (Waveshare RP2040 Zero))
 btn_allow_once   = make_button(board.GP2)
 btn_always_allow = make_button(board.GP3)
 btn_reject       = make_button(board.GP4)
-
 
 # Each entry: (button_object, keycode, NeoPixel_color, discrete_LED_index, name)
 BUTTONS = [
@@ -129,11 +122,7 @@ OFF    = 0
 def make_led(pin):
     return pwmio.PWMOut(pin, frequency=1000, duty_cycle=OFF)
 
-# v2 boards (Waveshare RP2040 Zero)
-#led_allow_once   = make_led(board.GP2)
-#led_always_allow = make_led(board.GP3)
-#led_reject       = make_led(board.GP4)
-# v3 boards
+# boards (Waveshare RP2040 Zero)
 led_allow_once   = make_led(board.GP10) 
 led_always_allow = make_led(board.GP11)
 led_reject       = make_led(board.GP12)
