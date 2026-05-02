@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-05-03
+
+- **feat:** long press macro — hold 800ms to type configurable string per button (issue #38, v1.0.8)
+- **feat:** v3 PCB confirmed working — buttons GP2/3/4, LEDs GP10/11/12, servo GP6 (v1.0.7)
+- **refactor:** pin assignments moved to very top of config block in `code.py`
+- **pending:** GP5 vibration motor not yet tested on v3 PCB (issue #35); top plate not yet ordered
+
+---
+
 ## 2026-05-01
 
 ### Codex Review — working tree diff
