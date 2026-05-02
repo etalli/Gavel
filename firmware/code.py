@@ -2,17 +2,15 @@
 Gavel – Claude Code physical controller
 Raspberry Pi Pico / Waveshare RP2040 Zero firmware (CircuitPython)
 
-Buttons (both boards):
-  GP14 → Allow Once   → sends '1'
-  GP15 → Always Allow → sends '2'
-  GP26 → Reject       → sends '3'
+Buttons:
+  v2: GP14 → Allow Once / GP15 → Always Allow / GP26 → Reject
+  v3: GP2  → Allow Once / GP3  → Always Allow / GP4  → Reject
 
-Regular LED mode (Raspberry Pi Pico):
-  GP2 → Allow Once   (green)
-  GP3 → Always Allow (green)
-  GP4 → Reject       (red)
+LEDs:
+  v2: GP2  → Allow Once (green) / GP3 → Always Allow (green) / GP4 → Reject (red)
+  v3: GP10 → Allow Once (green) / GP11 → Always Allow (green) / GP12 → Reject (red)
 
-NeoPixel mode (Waveshare RP2040 Zero):
+NeoPixel (Waveshare RP2040 Zero):
   GP16 → RGB NeoPixel — color-coded per event
 
 Vibration motor (Waveshare RP2040 Zero):
@@ -105,9 +103,15 @@ def make_button(pin):
     b.pull = digitalio.Pull.UP
     return b
 
-btn_allow_once   = make_button(board.GP14)
-btn_always_allow = make_button(board.GP15)
-btn_reject       = make_button(board.GP26)
+# v2 boards (Waveshare RP2040 Zero))
+#btn_allow_once   = make_button(board.GP14)
+#btn_always_allow = make_button(board.GP15)
+#btn_reject       = make_button(board.GP26)
+# v3 boards
+btn_allow_once   = make_button(board.GP2)
+btn_always_allow = make_button(board.GP3)
+btn_reject       = make_button(board.GP4)
+
 
 # Each entry: (button_object, keycode, NeoPixel_color, discrete_LED_index, name)
 BUTTONS = [
@@ -125,9 +129,14 @@ OFF    = 0
 def make_led(pin):
     return pwmio.PWMOut(pin, frequency=1000, duty_cycle=OFF)
 
-led_allow_once   = make_led(board.GP2)
-led_always_allow = make_led(board.GP3)
-led_reject       = make_led(board.GP4)
+# v2 boards (Waveshare RP2040 Zero)
+#led_allow_once   = make_led(board.GP2)
+#led_always_allow = make_led(board.GP3)
+#led_reject       = make_led(board.GP4)
+# v3 boards
+led_allow_once   = make_led(board.GP10) 
+led_always_allow = make_led(board.GP11)
+led_reject       = make_led(board.GP12)
 LEDS   = [led_allow_once, led_always_allow, led_reject]
 
 if USE_NEOPIXEL:
