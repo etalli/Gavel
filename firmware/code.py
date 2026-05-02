@@ -66,15 +66,25 @@ SERVO_INFO  =  45
 SERVO_WARN  =  90
 SERVO_ERROR = 135
 
+# Pin assignments — edit here when adapting to a different board
+PIN_BTN_ALLOW_ONCE   = board.GP2
+PIN_BTN_ALWAYS_ALLOW = board.GP3
+PIN_BTN_REJECT       = board.GP4
+PIN_LED_ALLOW_ONCE   = board.GP10
+PIN_LED_ALWAYS_ALLOW = board.GP11
+PIN_LED_REJECT       = board.GP12
+PIN_MOTOR            = board.GP5
+PIN_SERVO            = board.GP6
+
 # ── USB Keyboard ──────────────────────────────────────────────
 kbd = Keyboard(usb_hid.devices)
 
 # ── USB Serial data port (separate from REPL console) ────────
 serial = usb_cdc.data
 
-# ── Servo (GP6, 50 Hz PWM) ───────────────────────────────────
+# ── Servo (50 Hz PWM) ────────────────────────────────────────
 # Pulse width: 1 ms (0°) to 2 ms (180°) over a 20 ms period.
-_servo_pwm = pwmio.PWMOut(board.GP6, frequency=50)
+_servo_pwm = pwmio.PWMOut(PIN_SERVO, frequency=50)
 
 def set_servo(angle):
     pulse_us = 1000 + int(angle / 180 * 1000)  # 1000–2000 µs
@@ -82,8 +92,8 @@ def set_servo(angle):
 
 set_servo(SERVO_IDLE)
 
-# ── Vibration motor (active high, GP5) ───────────────────────
-motor = digitalio.DigitalInOut(board.GP5)
+# ── Vibration motor (active high) ────────────────────────────
+motor = digitalio.DigitalInOut(PIN_MOTOR)
 motor.direction = digitalio.Direction.OUTPUT
 motor.value = False
 
@@ -101,10 +111,9 @@ def make_button(pin):
     b.pull = digitalio.Pull.UP
     return b
 
-# boards (Waveshare RP2040 Zero))
-btn_allow_once   = make_button(board.GP2)
-btn_always_allow = make_button(board.GP3)
-btn_reject       = make_button(board.GP4)
+btn_allow_once   = make_button(PIN_BTN_ALLOW_ONCE)
+btn_always_allow = make_button(PIN_BTN_ALWAYS_ALLOW)
+btn_reject       = make_button(PIN_BTN_REJECT)
 
 # Each entry: (button_object, keycode, NeoPixel_color, discrete_LED_index, name)
 BUTTONS = [
@@ -122,10 +131,9 @@ OFF    = 0
 def make_led(pin):
     return pwmio.PWMOut(pin, frequency=1000, duty_cycle=OFF)
 
-# boards (Waveshare RP2040 Zero)
-led_allow_once   = make_led(board.GP10) 
-led_always_allow = make_led(board.GP11)
-led_reject       = make_led(board.GP12)
+led_allow_once   = make_led(PIN_LED_ALLOW_ONCE)
+led_always_allow = make_led(PIN_LED_ALWAYS_ALLOW)
+led_reject       = make_led(PIN_LED_REJECT)
 LEDS   = [led_allow_once, led_always_allow, led_reject]
 
 if USE_NEOPIXEL:
