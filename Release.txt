@@ -33,6 +33,13 @@ Claude Code の物理コントローラーに LED カラーを追加しました
 #ClaudeCode #Gavel
 
 
+Gavel v1.0.8
+ボタンの長押しでマクロ文字列を入力できるようになりました。
+800ms 以上押し続けると、設定した文字列を自動入力します。
+短押しは従来通りの動作（許可 / 常に許可 / 拒否）。
+MACROS は code.py の設定ブロックで変更できます。
+
+
 Gavel v1.0.7
 v3 PCB support — button and LED pin reassignment (GP2/3/4 → buttons, GP10/11/12 → LEDs).
 Confirmed working with servo (GP6) on the new board.
