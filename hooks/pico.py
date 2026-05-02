@@ -40,8 +40,9 @@ def _log_button_events(raw: str) -> None:
 
 
 def send_to_pico(event: str, payload: dict) -> None:
-    """Find the Pico and send payload as JSON over serial. Logs errors only."""
+    """Find the Pico and send payload as JSON over serial."""
     port = find_pico_port()
+    log(event, payload, port)
     if not port:
         return
     try:
