@@ -1,0 +1,40 @@
+Built a physical gavel for Claude Code.
+
+Three buttons: Allow Once, Always Allow, Reject. LEDs notify you of Claude's state — so you always know when a ruling is needed. Any keyboard could send the same keys — but a dedicated device makes you stop and think. A ruling, not a reflex.
+
+github.com/etalli/Gavel
+#ClaudeCode #CircuitPython
+
+
+--- JP
+
+Claude Code 用の物理コントローラーを作りました。
+
+ボタン3つ：一回許可、常に許可、拒否。LEDでClaudeの状態も通知——いつ判断が必要かが一目でわかる。
+キーボードでも同じ操作はできる——でも専用デバイスがあると、ちゃんと立ち止まって考えるようになる。反射じゃなく、判断として。
+
+github.com/etalli/Gavel
+#ClaudeCode #CircuitPython
+
+
+Let me write in Japanese, keeping it under 280 characters.
+
+
+Gavel v1.0.4
+Claude Code の物理コントローラーに LED カラーを追加しました
+ツールのリスクが色で一目でわかるように。
+🔵 Read 系 → 青 (低リスク)
+🟡 Edit / Write → 黄 (書き込み)
+🟠 WebFetch → オレンジ点滅 (ネットワーク)
+🔴 Bash など → 赤 (注意)
+
+📝 ボタン操作の履歴を decisions.jsonl に自動記録
+👉 https://github.com/etalli/Gavel
+#ClaudeCode #Gavel
+
+
+Gavel v1.0.6
+Claude Code の物理コントローラ Gavel にサーボを追加しました。
+通知の重要度に応じて角度を保持します。
+idle=0° / info=45° / warn=90° / error=135°
+画面を見なくても、ちらっと見るだけで状態がわかります。
