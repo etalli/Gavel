@@ -18,6 +18,10 @@ NeoPixel mode (Waveshare RP2040 Zero):
 Vibration motor (Waveshare RP2040 Zero):
   GP5 → motor driver IN — active high
 
+Servo (Waveshare RP2040 Zero):
+  GP6 → servo signal — holds angle by notification severity
+         idle=0°  info=45°  warn=90°  error=135°
+
 Serial: USB serial (/dev/tty.usbmodem*) from Mac hook scripts
   Incoming JSON: {"type": "notification"|"permission"|"idle", "level": "info"|"warn"|"error"}
 """
@@ -26,6 +30,7 @@ import board
 import digitalio
 import json
 import math
+import pwmio
 import time
 import usb_cdc
 import usb_hid
@@ -59,11 +64,27 @@ KITT_DEFAULT = False
 # Permission blink interval for network-category tools (ms)
 NETWORK_BLINK_MS = 500
 
+# Servo angles per notification severity (degrees, 0–180)
+SERVO_IDLE  =   0
+SERVO_INFO  =  45
+SERVO_WARN  =  90
+SERVO_ERROR = 135
+
 # ── USB Keyboard ──────────────────────────────────────────────
 kbd = Keyboard(usb_hid.devices)
 
 # ── USB Serial data port (separate from REPL console) ────────
 serial = usb_cdc.data
+
+# ── Servo (GP6, 50 Hz PWM) ───────────────────────────────────
+# Pulse width: 1 ms (0°) to 2 ms (180°) over a 20 ms period.
+_servo_pwm = pwmio.PWMOut(board.GP6, frequency=50)
+
+def set_servo(angle):
+    pulse_us = 1000 + int(angle / 180 * 1000)  # 1000–2000 µs
+    _servo_pwm.duty_cycle = pulse_us * 65535 // 20000
+
+set_servo(SERVO_IDLE)
 
 # ── Vibration motor (active high, GP5) ───────────────────────
 motor = digitalio.DigitalInOut(board.GP5)
@@ -96,8 +117,6 @@ BUTTONS = [
 ]
 
 # ── LED setup ─────────────────────────────────────────────────
-import pwmio
-
 # Both boards: anode → GPIO, cathode → GND (active-high): GPIO HIGH = on.
 BRIGHT = 65535
 DIM    = 8000
@@ -225,6 +244,7 @@ button_event_queue = []  # buffered when port is closed; flushed on next connect
 
 def press_button(keycode, color, led_idx, name="unknown"):
     all_leds_off()
+    set_servo(SERVO_IDLE)
     buzz(times=1, on_ms=60)
     send_key(keycode)
     if USE_NEOPIXEL:
@@ -349,6 +369,11 @@ while True:
                 set_permission_leds(perm_category)
 
             elif msg_type == "notification":
+                angle = {
+                    "error": SERVO_ERROR,
+                    "warn":  SERVO_WARN,
+                }.get(level, SERVO_INFO)
+                set_servo(angle)
                 flash_for_level(level)
                 state = STATE_IDLE
                 if not USE_NEOPIXEL:
@@ -357,6 +382,7 @@ while True:
 
             elif msg_type == "idle":
                 state = STATE_IDLE
+                set_servo(SERVO_IDLE)
                 all_leds_off()
                 if not USE_NEOPIXEL:
                     knight_prev = -1
