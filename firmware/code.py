@@ -35,6 +35,16 @@ from adafruit_hid.keycode import Keycode
 
 # ── Config ────────────────────────────────────────────────────
 
+# Pin assignments — edit here when adapting to a different board
+PIN_BTN_ALLOW_ONCE   = board.GP2
+PIN_BTN_ALWAYS_ALLOW = board.GP3
+PIN_BTN_REJECT       = board.GP4
+PIN_LED_ALLOW_ONCE   = board.GP10
+PIN_LED_ALWAYS_ALLOW = board.GP11
+PIN_LED_REJECT       = board.GP12
+PIN_MOTOR            = board.GP5
+PIN_SERVO            = board.GP6
+
 # Board auto-detection — no manual change needed
 # NeoPixel boards: Waveshare RP2040 Zero, Seeed XIAO RP2040
 # Discrete LED boards: Raspberry Pi Pico, Pico W (default)
@@ -65,16 +75,6 @@ SERVO_IDLE  =   0
 SERVO_INFO  =  45
 SERVO_WARN  =  90
 SERVO_ERROR = 135
-
-# Pin assignments — edit here when adapting to a different board
-PIN_BTN_ALLOW_ONCE   = board.GP2
-PIN_BTN_ALWAYS_ALLOW = board.GP3
-PIN_BTN_REJECT       = board.GP4
-PIN_LED_ALLOW_ONCE   = board.GP10
-PIN_LED_ALWAYS_ALLOW = board.GP11
-PIN_LED_REJECT       = board.GP12
-PIN_MOTOR            = board.GP5
-PIN_SERVO            = board.GP6
 
 # ── USB Keyboard ──────────────────────────────────────────────
 kbd = Keyboard(usb_hid.devices)
