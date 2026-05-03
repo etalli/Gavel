@@ -45,6 +45,8 @@ PIN_LED_ALWAYS_ALLOW = board.GP11
 PIN_LED_REJECT       = board.GP12
 PIN_MOTOR            = board.GP5
 PIN_SERVO            = board.GP6
+PIN_EYE_L            = board.GP0
+PIN_EYE_R            = board.GP1
 
 # Board auto-detection — no manual change needed
 # NeoPixel boards: Waveshare RP2040 Zero, Seeed XIAO RP2040
@@ -150,8 +152,16 @@ LEDS   = [led_allow_once, led_always_allow, led_reject]
 
 if USE_NEOPIXEL:
     import neopixel
-    np = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=1.0, auto_write=True, pixel_order=neopixel.RGB)
+    np    = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=1.0, auto_write=True, pixel_order=neopixel.RGB)
+    eye_l = neopixel.NeoPixel(PIN_EYE_L,      1, brightness=1.0, auto_write=True)
+    eye_r = neopixel.NeoPixel(PIN_EYE_R,      1, brightness=1.0, auto_write=True)
     breath_next = 0
+
+def set_np(color):
+    if USE_NEOPIXEL:
+        np[0]    = color
+        eye_l[0] = color
+        eye_r[0] = color
 
 KNIGHT_SEQUENCE = [0, 1, 2, 1]
 knight_step = 0
@@ -159,8 +169,7 @@ knight_prev = -1
 knight_next = 0
 
 def all_leds_off():
-    if USE_NEOPIXEL:
-        np[0] = (0, 0, 0)
+    set_np((0, 0, 0))
     for led in LEDS:
         led.duty_cycle = OFF
 
@@ -176,31 +185,26 @@ def set_permission_leds(category):
     """
     all_leds_off()
     if category == "readonly":
-        if USE_NEOPIXEL:
-            np[0] = (0, 0, 255)   # blue
+        set_np((0, 0, 255))        # blue
         set_led(1, DIM)
     elif category == "write":
-        if USE_NEOPIXEL:
-            np[0] = (255, 200, 0)  # yellow
+        set_np((255, 200, 0))      # yellow
         set_led(0, DIM)
         set_led(1, DIM)
     elif category == "network":
         pass  # blink loop takes over immediately
     else:  # destructive (default)
-        if USE_NEOPIXEL:
-            np[0] = (255, 0, 0)   # red
+        set_np((255, 0, 0))        # red
         for led in LEDS:
             led.duty_cycle = BRIGHT
 
 def flash_all(times=3, on_ms=80, off_ms=80):
     for _ in range(times):
-        if USE_NEOPIXEL:
-            np[0] = (255, 255, 255)
+        set_np((255, 255, 255))
         for led in LEDS:
             led.duty_cycle = BRIGHT
         time.sleep(on_ms / 1000)
-        if USE_NEOPIXEL:
-            np[0] = (0, 0, 0)
+        set_np((0, 0, 0))
         for led in LEDS:
             led.duty_cycle = OFF
         time.sleep(off_ms / 1000)
@@ -211,23 +215,19 @@ def flash_for_level(level):
     if level == "error":
         buzz(times=3, on_ms=60, off_ms=60)
         for _ in range(5):
-            if USE_NEOPIXEL:
-                np[0] = (255, 0, 0)
+            set_np((255, 0, 0))
             set_led(2, BRIGHT)
             time.sleep(0.1)
-            if USE_NEOPIXEL:
-                np[0] = (0, 0, 0)
+            set_np((0, 0, 0))
             set_led(2, OFF)
             time.sleep(0.1)
     elif level == "warn":
         for _ in range(3):
-            if USE_NEOPIXEL:
-                np[0] = (255, 165, 0)  # orange
+            set_np((255, 165, 0))  # orange
             for led in LEDS:
                 led.duty_cycle = BRIGHT
             time.sleep(0.2)
-            if USE_NEOPIXEL:
-                np[0] = (0, 0, 0)
+            set_np((0, 0, 0))
             for led in LEDS:
                 led.duty_cycle = OFF
             time.sleep(0.08)
@@ -265,8 +265,7 @@ def press_button(keycode, color, led_idx, name="unknown"):
     set_servo(SERVO_IDLE)
     buzz(times=1, on_ms=60)
     send_key(keycode)
-    if USE_NEOPIXEL:
-        np[0] = color
+    set_np(color)
     set_led(led_idx, BRIGHT)
     button_event_queue.append(json.dumps({"event": "button", "button": name}) + "\n")
 
@@ -354,8 +353,7 @@ while True:
     if state == STATE_PERMISSION and perm_category == "network" and now >= perm_blink_next:
         perm_blink_on = not perm_blink_on
         if perm_blink_on:
-            if USE_NEOPIXEL:
-                np[0] = (255, 165, 0)  # orange
+            set_np((255, 165, 0))  # orange
             for led in LEDS:
                 led.duty_cycle = BRIGHT
         else:
@@ -366,7 +364,7 @@ while True:
     if USE_NEOPIXEL and state == STATE_IDLE and kitt_enabled and not decision_off_at and now >= breath_next:
         t = time.monotonic()
         brightness = int((1 - math.cos(2 * math.pi * t / BREATH_PERIOD)) / 2 * BREATH_MAX)
-        np[0] = (0, 0, brightness)
+        set_np((0, 0, brightness))
         breath_next = now + BREATH_UPDATE
 
     # ── KITT animation (regular LEDs only, non-blocking) ──────
